@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AP Calculus: Limits & Continuity Interactive Studio</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- KaTeX for crisp LaTeX Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <!-- Marked for Markdown in AI Chat -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .math-font {
+      font-family: 'KaTeX_Math', Times, serif;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.5);
+      border-radius: 4px;
+    }
+    .katex-display {
+      margin: 0.5em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/80 sticky top-0 z-40 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+        <i class="fa-solid fa-infinity text-lg"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-bold text-base md:text-lg tracking-tight text-white">AP Calculus: Limits &amp; Continuity</h1>
+          <span class="text-[11px] bg-indigo-500/20 text-indigo-300 font-semibold px-2 py-0.5 rounded-full border border-indigo-500/30">Day 2 Masterclass</span>
+        </div>
+        <p class="text-xs text-slate-400">Master every concept required for Problems 1–15 &amp; T/F</p>
+      </div>
+    </div>
+
+    <!-- Right Controls: Progress, Slide Selector, AI Tutor Button -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Slide indicator dropdown -->
+      <div class="relative">
+        <button id="tocBtn" class="flex items-center gap-2 bg-slate-700/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg border border-slate-600 transition">
+          <i class="fa-solid fa-layer-group text-indigo-400"></i>
+          <span id="currentSlideLabel">Slide 1 / 10</span>
+          <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+        </button>
+
+        <!-- Dropdown menu -->
+        <div id="tocMenu" class="hidden absolute right-0 mt-2 w-72 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 max-h-96 overflow-y-auto">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 py-1.5">Slide Curriculum</div>
+          <div id="tocList" class="flex flex-col gap-1"></div>
+        </div>
+      </div>
+
+      <!-- Practice Test Jump Button -->
+      <button id="toggleQuizBtn" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg border border-amber-500/40 flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span class="hidden sm:inline">15-Problem</span> <span>Quiz</span>
+      </button>
+
+      <!-- AI Tutor Drawer Toggle -->
+      <button id="openAiBtn" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg shadow-md shadow-indigo-600/30 flex items-center gap-2 transition active:scale-95">
+        <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+        <span>AI Tutor</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Slideshow & Visual Workspace -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col relative overflow-hidden">
+    
+    <!-- Slide Progress Bar -->
+    <div class="w-full bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden border border-slate-700/50">
+      <div id="slideProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-full w-[10%] transition-all duration-300"></div>
+    </div>
+
+    <!-- Active Slide Container Card -->
+    <div id="slideCard" class="flex-1 bg-slate-800/90 border border-slate-700 rounded-2xl p-5 md:p-8 flex flex-col justify-between shadow-2xl relative backdrop-blur overflow-y-auto">
+      <!-- Dynamic slide content injected via JavaScript -->
+      <div id="slideContent" class="space-y-6"></div>
+
+      <!-- Slide Navigation Footer -->
+      <div class="pt-6 border-t border-slate-700/80 flex items-center justify-between mt-6">
+        <button id="prevSlideBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-700/70 hover:bg-slate-700 text-slate-200 text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Previous</span>
+        </button>
+
+        <div class="flex items-center gap-1.5" id="slideDots"></div>
+
+        <button id="nextSlideBtn" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-md shadow-indigo-600/20 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <span>Next</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 15-Question Interactive Quiz Modal -->
+  <div id="quizModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <!-- Quiz Header -->
+      <div class="px-6 py-4 bg-slate-850 border-b border-slate-700 flex items-center justify-between bg-slate-800/95">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-pen-ruler"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white">Limits Test Practice Checkpoint</h2>
+            <p class="text-xs text-slate-400">15 Multiple-Choice + 5 True/False modelled on your AP exam</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span id="quizScoreBadge" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold px-2.5 py-1 rounded-full">Score: 0 / 20</span>
+          <button id="closeQuizBtn" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Questions Scroll Container -->
+      <div id="quizQuestionsContainer" class="flex-1 overflow-y-auto p-6 space-y-6"></div>
+
+      <!-- Quiz Footer -->
+      <div class="px-6 py-3.5 bg-slate-850 border-t border-slate-700 bg-slate-800/95 flex justify-between items-center">
+        <button id="resetQuizBtn" class="text-xs text-slate-400 hover:text-rose-400 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate-right"></i> Reset All Answers
+        </button>
+        <button id="checkAllQuizBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-md transition">
+          Check All &amp; Reveal Solutions
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Tutor Sliding Drawer -->
+  <div id="aiDrawer" class="fixed top-0 right-0 h-full w-full sm:w-[440px] bg-slate-850 bg-slate-850/95 bg-slate-800 border-l border-slate-700 shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col backdrop-blur-md">
+    
+    <!-- Chat Header -->
+    <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-900/60">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-indigo-400 flex items-center justify-center">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-sm text-white">AI Calculus Mentor</h3>
+          <p class="text-[11px] text-emerald-400 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-ping"></span> Live &amp; Ready
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button id="apiKeyToggleBtn" title="API Key Settings" class="text-slate-400 hover:text-indigo-400 p-1.5 rounded-lg text-xs transition">
+          <i class="fa-solid fa-key"></i>
+        </button>
+        <button id="closeAiBtn" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Optional API Key Input Banner (Hidden by default) -->
+    <div id="apiKeyBanner" class="hidden px-4 py-2 bg-slate-900 border-b border-slate-700 text-xs flex items-center gap-2">
+      <input type="password" id="customApiKeyInput" placeholder="Optional: Enter Gemini API Key..." class="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+      <button id="saveApiKeyBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded text-xs font-semibold">Save</button>
+    </div>
+
+    <!-- Suggested Quick Prompts -->
+    <div class="px-4 py-2.5 bg-slate-900/40 border-b border-slate-700/60 flex items-center gap-1.5 overflow-x-auto text-[11px]">
+      <button class="quick-prompt-btn whitespace-nowrap bg-slate-700/60 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-600/50">
+        💡 Explain Current Slide
+      </button>
+      <button class="quick-prompt-btn whitespace-nowrap bg-slate-700/60 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-600/50">
+        🎯 Hole vs Asymptote trick
+      </button>
+      <button class="quick-prompt-btn whitespace-nowrap bg-slate-700/60 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-md border border-slate-600/50">
+        ⚡ 3-Part Continuity Rule
+      </button>
+    </div>
+
+    <!-- Chat Messages Scroll Area -->
+    <div id="aiChatMessages" class="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs sm:text-sm">
+      <!-- Initial AI Message -->
+      <div class="flex gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-sparkles text-xs"></i>
+        </div>
+        <div class="bg-slate-700/60 border border-slate-600/50 p-3 rounded-2xl rounded-tl-sm text-slate-200 leading-relaxed shadow-sm">
+          Hey there! I'm your dedicated AP Calculus tutor. Whether you're stuck on factoring $\frac{0}{0}$ forms, finding parameters for piecewise continuity, or understanding the Intermediate Value Theorem, ask me anything!
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="p-3.5 border-t border-slate-700 bg-slate-900/60">
+      <form id="aiChatForm" class="flex gap-2">
+        <input 
+          type="text" 
+          id="aiChatInput" 
+          placeholder="Ask a question about limits or a test problem..." 
+          class="flex-1 bg-slate-700/80 border border-slate-600 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition"
+        >
+        <button 
+          type="submit" 
+          id="sendAiBtn"
+          class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition flex items-center justify-center shadow-md disabled:opacity-40"
+        >
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --------------------------------------------------------------------------
+    // Slides Data Structure (Covering Topics 1-15 & T/F in Depth)
+    // --------------------------------------------------------------------------
+    const slidesData = [
+      {
+        id: "intro",
+        title: "1. The Big Picture: Limits & Continuity Foundations",
+        badge: "Core Concept",
+        summary: "What does it mean for a limit to exist versus a function being continuous?",
+        content: `
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            <div class="space-y-4">
+              <h3 class="text-lg font-bold text-indigo-300">The 3-Part Definition of Continuity</h3>
+              <p class="text-sm text-slate-300 leading-relaxed">
+                For a function $f(x)$ to be continuous at $x = c$, three non-negotiable criteria must all pass simultaneously:
+              </p>
+              <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-xl space-y-2 text-sm">
+                <div class="flex items-start gap-2">
+                  <span class="bg-indigo-500/20 text-indigo-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                  <div><strong>$f(c)$ is defined:</strong> There is a point on the graph at $x = c$.</div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="bg-indigo-500/20 text-indigo-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                  <div><strong>$\\lim_{x \\to c} f(x)$ exists:</strong> The left-hand and right-hand limits match:
+                    $$\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L$$
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="bg-indigo-500/20 text-indigo-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                  <div><strong>The Limit equals the Value:</strong>
+                    $$\\lim_{x \\to c} f(x) = f(c)$$
+                  </div>
+                </div>
+              </div>
+              <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-300 text-xs">
+                <strong>Crucial Exam Insight (Addresses Problem 9 & 15):</strong> Just because $\\lim_{x \\to c} f(x) = L$ does <em>not</em> mean $f(c) = L$, nor does it mean $f(c)$ even exists! Limits describe approaching behavior, not actual arrival.
+              </div>
+            </div>
+
+            <!-- Interactive Canvas Visualizer: Continuity Tester -->
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl flex flex-col items-center">
+              <div class="flex items-center justify-between w-full mb-2">
+                <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Interactive Discontinuity Explorer</span>
+                <span class="text-[11px] text-indigo-400">Click to switch types</span>
+              </div>
+              <canvas id="discontinuityCanvas" width="380" height="220" class="w-full bg-slate-950 rounded-lg border border-slate-800"></canvas>
+              <div class="flex gap-2 mt-3 w-full">
+                <button onclick="setDiscontinuityType('removable')" class="disc-btn flex-1 py-1.5 text-xs bg-indigo-600 text-white rounded-lg font-medium transition">Hole (Removable)</button>
+                <button onclick="setDiscontinuityType('jump')" class="disc-btn flex-1 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition">Jump</button>
+                <button onclick="setDiscontinuityType('infinite')" class="disc-btn flex-1 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-medium transition">Asymptote</button>
+              </div>
+              <p id="discExplanation" class="text-xs text-slate-400 mt-2 text-center h-10 flex items-center justify-center"></p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "graphical",
+        title: "2. Reading Limits from Graphs (Problems 1, 7, 8)",
+        badge: "Exam Core",
+        summary: "Identify when two-sided limits exist vs. when one-sided limits differ.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              Exam questions frequently present piecewise graphs and ask: <em>"At which value of $b$ does $\\lim_{x \\to b} f(x)$ exist, yet $f$ is not continuous at $b$?"</em>
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-xl">
+                <div class="text-indigo-400 font-bold text-sm mb-1">Type A: Removable Discontinuity (Hole)</div>
+                <div class="text-xs text-slate-300 space-y-1.5">
+                  <p>• Left limit = Right limit = $L$.</p>
+                  <p>• Therefore, <strong>$\\lim_{x \\to b} f(x)$ EXISTS</strong>.</p>
+                  <p>• But either $f(b)$ is undefined OR $f(b) \\neq L$ (a point plotted elsewhere).</p>
+                  <p class="text-emerald-400 font-semibold mt-2">→ This is always the answer for "Limit exists but not continuous"!</p>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-xl">
+                <div class="text-rose-400 font-bold text-sm mb-1">Type B: Jump Discontinuity</div>
+                <div class="text-xs text-slate-300 space-y-1.5">
+                  <p>• $\\lim_{x \\to b^-} f(x) = L_1$</p>
+                  <p>• $\\lim_{x \\to b^+} f(x) = L_2$</p>
+                  <p>• Since $L_1 \\neq L_2$, the two-sided <strong>$\\lim_{x \\to b} f(x)$ DOES NOT EXIST</strong>.</p>
+                  <p class="text-slate-400 mt-2">Can never be repaired by redefining a single point!</p>
+                </div>
+              </div>
+
+              <div class="bg-slate-900/60 border border-slate-700 p-4 rounded-xl">
+                <div class="text-purple-400 font-bold text-sm mb-1">Type C: Infinite Discontinuity</div>
+                <div class="text-xs text-slate-300 space-y-1.5">
+                  <p>• At vertical asymptote $x = c$, values blow up to $+\\infty$ or $-\\infty$.</p>
+                  <p>• $\\lim_{x \\to c} f(x)$ does not exist as a finite real number.</p>
+                  <p class="text-slate-400 mt-2">Notice: One branch can shoot up while the other shoots down!</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Worked Example for Problem 1 -->
+            <div class="bg-slate-900/90 border border-indigo-500/30 p-4 rounded-xl">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-1">Walkthrough of Problem 1 from Test Day 2:</h4>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Looking at the graph at $x = 0$, as $x \\to 0^-$ the curve approaches $2$. As $x \\to 0^+$ the curve approaches $2$. 
+                Therefore, $\\lim_{x \\to 0} f(x) = 2$ <strong>exists</strong>! However, the solid dot is plotted at $(0, 1.5)$ so $f(0) = 1.5 \\neq 2$. 
+                Hence, the answer is <strong>$b = 0$</strong>.
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "indeterminate",
+        title: "3. Algebraic Limits: 0/0 Indeterminate Forms (Problem 2)",
+        badge: "Technique",
+        summary: "Factoring out lowest common powers and canceling zero-factors.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              When direct substitution yields $\\frac{0}{0}$, this is an <strong>indeterminate form</strong>. It signals that algebraic manipulation (factoring, conjugates, or common denominators) will reveal the true limit.
+            </p>
+
+            <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-xl space-y-3">
+              <div class="text-sm font-semibold text-indigo-300">Direct Breakdown of Test Problem 2:</div>
+              <div class="text-base text-center py-2 bg-slate-950 rounded-lg font-mono">
+                $$\\lim_{x \\to 0} \\frac{5x^4 + 8x^2}{3x^4 - 16x^2}$$
+              </div>
+
+              <div class="space-y-2 text-xs sm:text-sm text-slate-300">
+                <p><strong>Step 1: Check direct substitution:</strong></p>
+                <p class="pl-4 font-mono text-slate-400">$\\frac{5(0)^4 + 8(0)^2}{3(0)^4 - 16(0)^2} = \\frac{0}{0}$ (Indeterminate!)</p>
+
+                <p><strong>Step 2: Factor out the greatest common factor $x^2$ from both numerator and denominator:</strong></p>
+                <div class="pl-4">
+                  $$\\frac{x^2(5x^2 + 8)}{x^2(3x^2 - 16)}$$
+                </div>
+
+                <p><strong>Step 3: Cancel the non-zero factor $x^2$ for all $x \\neq 0$:</strong></p>
+                <div class="pl-4">
+                  $$= \\lim_{x \\to 0} \\frac{5x^2 + 8}{3x^2 - 16}$$
+                </div>
+
+                <p><strong>Step 4: Now substitute $x = 0$:</strong></p>
+                <div class="pl-4 text-emerald-400 font-semibold">
+                  $$= \\frac{5(0)^2 + 8}{3(0)^2 - 16} = \\frac{8}{-16} = -\\frac{1}{2}$$
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-xs text-indigo-300">
+              💡 <strong>Pro-Tip:</strong> Always look for common powers of $x$. If the lowest power in both top and bottom is $x^2$, dividing all terms by $x^2$ instantly reduces higher powers to $0$ as $x \\to 0$.
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "infinity",
+        title: "4. Limits at Infinity & Horizontal Asymptotes (Problems 3, 13)",
+        badge: "End Behavior",
+        summary: "Comparing degrees of polynomials to instantly deduce horizontal asymptotes.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              A horizontal asymptote represents the limit of $f(x)$ as $x \\to \\infty$ or $x \\to -\\infty$. 
+              For any rational function $\\frac{P(x)}{Q(x)}$:
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="bg-slate-900/60 border border-slate-700 p-3.5 rounded-xl">
+                <div class="text-amber-400 font-bold text-xs uppercase mb-1">Bottom Heavy</div>
+                <p class="text-xs text-slate-300">$\\text{deg(top)} < \\text{deg(bottom)}$</p>
+                <p class="text-xs text-indigo-300 font-semibold mt-2">$$\\lim_{x \\to \\pm\\infty} f(x) = 0$$</p>
+                <p class="text-[11px] text-slate-400 mt-1">Horizontal Asymptote at $y = 0$.</p>
+              </div>
+
+              <div class="bg-indigo-950/40 border border-indigo-500/40 p-3.5 rounded-xl">
+                <div class="text-emerald-400 font-bold text-xs uppercase mb-1">Equal Degrees (Problem 3)</div>
+                <p class="text-xs text-slate-300">$\\text{deg(top)} = \\text{deg(bottom)}$</p>
+                <p class="text-xs text-indigo-300 font-semibold mt-2">$$\\lim_{x \\to \\pm\\infty} f(x) = \\frac{a_n}{b_n}$$</p>
+                <p class="text-[11px] text-slate-400 mt-1">Ratio of leading coefficients!</p>
+              </div>
+
+              <div class="bg-slate-900/60 border border-slate-700 p-3.5 rounded-xl">
+                <div class="text-rose-400 font-bold text-xs uppercase mb-1">Top Heavy</div>
+                <p class="text-xs text-slate-300">$\\text{deg(top)} > \\text{deg(bottom)}$</p>
+                <p class="text-xs text-indigo-300 font-semibold mt-2">$$\\lim_{x \\to \\pm\\infty} f(x) = \\pm\\infty$$</p>
+                <p class="text-[11px] text-slate-400 mt-1">No horizontal asymptote.</p>
+              </div>
+            </div>
+
+            <!-- Problem 3 Breakdown -->
+            <div class="bg-slate-900/90 border border-slate-700 p-4 rounded-xl space-y-2 text-xs sm:text-sm">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Test Problem 3 Analysis:</span>
+              $$\\lim_{n \\to \\infty} \\frac{3n^3 - 5n}{n^3 - 2n^2 + 1}$$
+              <p class="text-slate-300">
+                Both polynomials have degree $3$. Dividing every term by $n^3$:
+                $$\\lim_{n \\to \\infty} \\frac{3 - \\frac{5}{n^2}}{1 - \\frac{2}{n} + \\frac{1}{n^3}} = \\frac{3 - 0}{1 - 0 + 0} = 3$$
+              </p>
+            </div>
+
+            <!-- Problem 13 Breakdown -->
+            <div class="bg-slate-900/90 border border-slate-700 p-4 rounded-xl space-y-2 text-xs sm:text-sm">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Test Problem 13 Analysis:</span>
+              <p class="text-slate-300">
+                <em>"For $x > 0$, the line $y = 1$ is an asymptote of $f(x)$. Which statement must be true?"</em><br>
+                By definition, a horizontal line $y = L$ for positive values means <strong>$\\lim_{x \\to \\infty} f(x) = 1$</strong>. 
+                (Notice: the graph CAN cross horizontal asymptotes in finite regions, so $f(x) \\neq 1$ is false!)
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "trig",
+        title: "5. Special Trigonometric Limits (Problems 4, 16, 20)",
+        badge: "Special Limit",
+        summary: "Harnessing the fundamental limit identity lim (sin u)/u = 1.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              The foundational trig limit in calculus is:
+              $$\\lim_{u \\to 0} \\frac{\\sin u}{u} = 1$$
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Problem 4 Walkthrough -->
+              <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl space-y-2">
+                <span class="text-xs font-bold text-indigo-400 uppercase">Problem 4: $\\lim_{x \\to 0} \\frac{1 - \\cos^2(2x)}{(2x)^2}$</span>
+                <p class="text-xs text-slate-300">
+                  Recall the Pythagorean identity: $1 - \\cos^2(\\theta) = \\sin^2(\\theta)$. Here, $\\theta = 2x$:
+                </p>
+                <div class="bg-slate-950 p-2.5 rounded-lg text-xs font-mono">
+                  $$\\frac{1 - \\cos^2(2x)}{(2x)^2} = \\frac{\\sin^2(2x)}{(2x)^2} = \\left( \\frac{\\sin(2x)}{2x} \\right)^2$$
+                </div>
+                <p class="text-xs text-slate-300">
+                  As $x \\to 0$, $2x \\to 0$. Therefore:
+                </p>
+                <p class="text-xs text-emerald-400 font-bold">
+                  $$= (1)^2 = 1$$
+                </p>
+              </div>
+
+              <!-- True/False 16 & 20 Walkthrough -->
+              <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl space-y-2">
+                <span class="text-xs font-bold text-indigo-400 uppercase">True/False 16 &amp; 20 Analysis</span>
+                <div class="text-xs text-slate-300 space-y-2">
+                  <div>
+                    <strong>T/F #16:</strong> $\\lim_{x \\to \\pi} \\frac{\\sin x}{x} = \\frac{\\sin(\\pi)}{\\pi} = \\frac{0}{\\pi} = 0$. <br>
+                    <span class="text-emerald-400 font-semibold">True!</span> (Do NOT confuse this with $x \\to 0$).
+                  </div>
+                  <div>
+                    <strong>T/F #20:</strong> $\\lim_{x \\to 0} \\frac{x + \\sin x}{x} = \\lim_{x \\to 0} \\left( \\frac{x}{x} + \\frac{\\sin x}{x} \\right) = 1 + 1 = 2$. <br>
+                    <span class="text-emerald-400 font-semibold">True!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "piecewise",
+        title: "6. Continuity Parameters: Solving for k, a, b (Problem 5)",
+        badge: "Algebraic",
+        summary: "Force the limit from both sides to equal the function value.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              When given a piecewise function with a constant $k$, we set the limit as $x \\to c$ equal to $f(c)$:
+              $$k = \\lim_{x \\to c} f(x)$$
+            </p>
+
+            <!-- Problem 5 Breakdown -->
+            <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-xl space-y-3">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Test Problem 5 Detailed Solution:</span>
+              <p class="text-sm text-slate-300">
+                $$f(x) = \\begin{cases} \\dfrac{(2x+1)(x-2)}{x-2}, & x \\neq 2 \\\\ k, & x = 2 \\end{cases}$$
+              </p>
+              
+              <div class="space-y-2 text-xs sm:text-sm text-slate-300 border-l-2 border-indigo-500 pl-4">
+                <p><strong>1. Evaluate the limit as $x \\to 2$:</strong></p>
+                <p>For $x \\neq 2$, the $(x - 2)$ factor in numerator and denominator cancels completely:</p>
+                $$\\lim_{x \\to 2} f(x) = \\lim_{x \\to 2} (2x + 1)$$
+                
+                <p><strong>2. Substitute $x = 2$:</strong></p>
+                $$\\lim_{x \\to 2} (2(2) + 1) = 4 + 1 = 5$$
+
+                <p><strong>3. Equate to $f(2)$:</strong></p>
+                <p>To be continuous, $f(2)$ must equal this limit:
+                  $$f(2) = k \\implies k = 5$$
+                </p>
+              </div>
+            </div>
+
+            <div class="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-300">
+              ✓ <strong>General Rule for "Find $k$":</strong> 
+              1. Simplify the non-equal branch by factoring and canceling.
+              2. Plug in the boundary $x$ value.
+              3. Set $k$ equal to that result!
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "rational_asymptotes",
+        title: "7. Rational Asymptotes: Hole vs. Vertical vs. Horizontal (Problems 6, 14)",
+        badge: "Critical",
+        summary: "Never mistake a removable hole for a vertical asymptote!",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              For a rational function $f(x) = \\frac{P(x)}{Q(x)}$:
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-slate-900/70 border border-slate-700 p-4 rounded-xl">
+                <h4 class="text-sm font-bold text-rose-400 mb-2">Vertical Asymptote vs Hole</h4>
+                <ul class="text-xs text-slate-300 space-y-2">
+                  <li>
+                    <strong>Removable Hole:</strong> Occurs when a factor $(x - c)$ cancels completely from the denominator. 
+                    Example: In $\\frac{x}{x(x^2 - 9)}$, the factor $x$ cancels $\\implies x = 0$ is a <strong>hole</strong>, NOT a vertical asymptote!
+                  </li>
+                  <li>
+                    <strong>Vertical Asymptote:</strong> Occurs when a factor remains in the denominator after full cancellation. 
+                    Example: $(x^2 - 9) = (x-3)(x+3) = 0 \\implies x = 3$ and $x = -3$ are <strong>vertical asymptotes</strong>.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Problem 6 Breakdown -->
+              <div class="bg-slate-900/70 border border-slate-700 p-4 rounded-xl">
+                <h4 class="text-sm font-bold text-indigo-400 mb-2">Problem 6: Parameter Matching</h4>
+                <p class="text-xs text-slate-300 leading-relaxed mb-2">
+                  $$y = \\frac{ax + b}{x + c}$$
+                  • Horizontal Asymptote at $y = 2 \\implies \\frac{a}{1} = 2 \\implies a = 2$.<br>
+                  • Vertical Asymptote at $x = -3 \\implies -3 + c = 0 \\implies c = 3$.<br>
+                  • Therefore:
+                </p>
+                <div class="p-2 bg-slate-950 rounded-lg text-emerald-400 font-bold text-xs text-center">
+                  $$a + c = 2 + 3 = 5$$
+                </div>
+              </div>
+            </div>
+
+            <!-- Problem 14 Breakdown -->
+            <div class="bg-slate-900/90 border border-slate-700 p-4 rounded-xl">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Test Problem 14 Breakdown:</span>
+              <p class="text-xs text-slate-300 mt-1">
+                For $f(x) = \\frac{x}{x(x^2 - 9)}$:
+                <br>1. Cancel $x$: $f(x) = \\frac{1}{x^2 - 9}$ for $x \\neq 0$. ($x = 0$ is a hole).
+                <br>2. Vertical asymptotes: $x^2 - 9 = 0 \\implies \\mathbf{x = -3, x = 3}$.
+                <br>3. Horizontal asymptote: bottom degree $3 >$ top degree $1 \\implies \\mathbf{y = 0}$.
+                <br><strong class="text-emerald-400">Correct Asymptotes: $x = -3, x = 3, y = 0$.</strong>
+              </p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "limit_properties",
+        title: "8. Limit Arithmetic & Reading Tables (Problems 10, 12)",
+        badge: "Properties",
+        summary: "Limits pass through sums, products, and scalars.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              When working with limit tables, always use the <strong>LIMIT values</strong>, not the isolated function values!
+            </p>
+
+            <!-- Problem 10 Breakdown -->
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl space-y-2">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Problem 10: Selected Values and Limits</span>
+              <div class="grid grid-cols-3 gap-2 text-center text-xs bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <div>$f(3) = 3,\\; \\lim_{x \\to 3} f(x) = 2$</div>
+                <div>$g(3) = 8,\\; \\lim_{x \\to 3} g(x) = 8$</div>
+                <div>$h(3) = 4,\\; \\lim_{x \\to 3} h(x) = 2$</div>
+              </div>
+              <p class="text-xs text-slate-300 mt-2">
+                Evaluate: $\\lim_{x \\to 3} \\big[ h(x)(2f(x) + 3g(x)) \\big]$
+              </p>
+              <div class="bg-slate-950 p-3 rounded-lg text-xs space-y-1 font-mono text-slate-300">
+                <p>= \\lim_{x \\to 3} h(x) \\cdot \\Big[ 2 \\lim_{x \\to 3} f(x) + 3 \\lim_{x \\to 3} g(x) \\Big]</p>
+                <p>= 2 \\cdot \\big[ 2(2) + 3(8) \\big]</p>
+                <p>= 2 \\cdot \\big[ 4 + 24 \\big] = 2 \\cdot 28 = <strong class="text-emerald-400">56</strong></p>
+              </div>
+              <p class="text-[11px] text-rose-300">
+                ⚠️ <em>Trap avoided:</em> Never use $f(3)=3$ or $h(3)=4$. The question asks for the limit, so only limit values count!
+              </p>
+            </div>
+
+            <!-- Problem 12 Breakdown -->
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl space-y-1 text-xs text-slate-300">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Problem 12: Estimating Limits from Numerical Tables</span>
+              <p>As $x \\to 1$ from both sides ($0.9, 0.99 \\to 1$ and $1.1, 1.01 \\to 1$):</p>
+              <p>• If outputs converge to $0.000...$ on both sides, the limit is $0$.</p>
+              <p>• For $f(x)$, outputs are $0$ on the left and $0.9$ on the right $\\implies$ No limit.</p>
+              <p>• For $g(x)$ and $h(x)$, inspect both sides to see which balances towards $0$.</p>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "ivt",
+        title: "9. The Intermediate Value Theorem (IVT) (Problem 11)",
+        badge: "Theorem",
+        summary: "If f is continuous on [a, b], it must hit every value between f(a) and f(b).",
+        content: `
+          <div class="space-y-4">
+            <div class="p-4 bg-indigo-950/40 border border-indigo-500/40 rounded-xl space-y-2">
+              <div class="text-indigo-300 font-bold text-sm">Formal Intermediate Value Theorem:</div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                If $f(x)$ is <strong>continuous</strong> on the closed interval $[a, b]$, and $u$ is any number between $f(a)$ and $f(b)$, then there exists at least one number $c \\in (a, b)$ such that:
+                $$f(c) = u$$
+              </p>
+            </div>
+
+            <!-- Problem 11 Breakdown -->
+            <div class="bg-slate-900/80 border border-slate-700 p-4 rounded-xl space-y-3">
+              <span class="text-xs font-bold text-indigo-400 uppercase">Problem 11: $f(x) = x^3 - 6x + 2$</span>
+              <p class="text-xs text-slate-300">
+                Because $f(x)$ is a polynomial, it is continuous everywhere! Let's test interval endpoints:
+              </p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">$f(0) = 2$</div>
+                <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">$f(1) = -3$</div>
+                <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">$f(2) = -2$</div>
+                <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">$f(3) = 11$</div>
+              </div>
+
+              <div class="text-xs text-slate-300 space-y-1.5">
+                <p>• On $(0, 2)$: $f(0) = 2$ and $f(2) = -2$. Since $0$ is between $-2$ and $2$, IVT guarantees a value $c \\in (0, 2)$ with $f(c) = 0$!</p>
+                <p>• On $(1, 3)$: $f(1) = -3$ and $f(3) = 11$. Since $4$ is between $-3$ and $11$, IVT also guarantees a $c \\in (1, 3)$ with $f(c) = 4$!</p>
+              </div>
+            </div>
+          </div>
+        `
+      },
+      {
+        id: "true_false",
+        title: "10. True/False Logic & Common Traps (Problems 17, 18, 19)",
+        badge: "Exam Traps",
+        summary: "Mastering the subtle definitions that AP test-makers love to test.",
+        content: `
+          <div class="space-y-4">
+            <p class="text-sm text-slate-300">
+              Exam questions 17, 18, and 19 test the exact mathematical boundaries of limits and continuity. Here is why each is <strong>FALSE</strong>:
+            </p>
+
+            <div class="space-y-3">
+              <!-- Statement 17 -->
+              <div class="bg-slate-900/80 border border-rose-500/30 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-rose-400">Question 17</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">FALSE</span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1">
+                  <em>"It is possible to extend the definition of $f$ at a jump discontinuity $x = a$ so that $f$ is continuous at $x = a$."</em>
+                </p>
+                <p class="text-xs text-slate-400 mt-1.5">
+                  <strong>Why:</strong> At a jump discontinuity, $\\lim_{x \\to a^-} f(x) \\neq \\lim_{x \\to a^+} f(x)$, so the limit itself DOES NOT EXIST. No single value assigned to $f(a)$ can make the two separate branches meet! You can only fix <em>removable</em> discontinuities this way.
+                </p>
+              </div>
+
+              <!-- Statement 18 -->
+              <div class="bg-slate-900/80 border border-rose-500/30 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-rose-400">Question 18</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">FALSE</span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1">
+                  <em>"If $p(x)$ is a polynomial, then $f(x) = \\frac{p(x)}{x - 1}$ has a vertical asymptote at $x = 1$."</em>
+                </p>
+                <p class="text-xs text-slate-400 mt-1.5">
+                  <strong>Why (Counterexample):</strong> Let $p(x) = x - 1$. Then $f(x) = \\frac{x - 1}{x - 1} = 1$ for all $x \\neq 1$. This graph has a <strong>hole</strong> at $(1, 1)$, NOT a vertical asymptote!
+                </p>
+              </div>
+
+              <!-- Statement 19 -->
+              <div class="bg-slate-900/80 border border-rose-500/30 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-rose-400">Question 19</span>
+                  <span class="text-xs font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">FALSE</span>
+                </div>
+                <p class="text-xs text-slate-300 mt-1">
+                  <em>"If $f(x)$ has a vertical asymptote at $x = c$, then both one-sided limits must either both equal $+\\infty$ or both equal $-\\infty$."</em>
+                </p>
+                <p class="text-xs text-slate-400 mt-1.5">
+                  <strong>Why (Counterexample):</strong> Consider $f(x) = \\frac{1}{x}$. As $x \\to 0^-$, $f(x) \\to -\\infty$. As $x \\to 0^+$, $f(x) \\to +\\infty$. They go to opposite infinities, yet $x = 0$ is a vertical asymptote!
+                </p>
+              </div>
+            </div>
+          </div>
+        `
+      }
+    ];
+
+    // --------------------------------------------------------------------------
+    // Complete 15 Multiple Choice + 5 True/False Quiz Questions
+    // --------------------------------------------------------------------------
+    const quizData = [
+      {
+        id: 1,
+        question: "1. The graph of function $f$ has a vertical asymptote at $x = -1$, a jump at $x = 2$, and at $x = 0$ both one-sided limits equal $2$ while $f(0) = 1$. If $\\lim_{x \\to b} f(x)$ exists and $f$ is not continuous at $b$, then $b$ equals:",
+        options: ["-1", "0", "1", "2", "3"],
+        correct: 1, // '0'
+        explanation: "At $x = 0$, both left and right limits equal $2$, so the two-sided limit exists. However, $f(0) = 1 \\neq 2$, making it discontinuous at $b = 0$ (a removable point discontinuity)."
+      },
+      {
+        id: 2,
+        question: "2. Evaluate: $\\lim_{x \\to 0} \\frac{5x^4 + 8x^2}{3x^4 - 16x^2}$",
+        options: ["-1/2", "0", "1", "5/3", "Nonexistent"],
+        correct: 0, // '-1/2'
+        explanation: "Factor out $x^2$: $\\frac{x^2(5x^2 + 8)}{x^2(3x^2 - 16)} = \\frac{5(0) + 8}{3(0) - 16} = \\frac{8}{-16} = -\\frac{1}{2}$."
+      },
+      {
+        id: 3,
+        question: "3. Evaluate: $\\lim_{n \\to \\infty} \\frac{3n^3 - 5n}{n^3 - 2n^2 + 1}$",
+        options: ["-5", "-2", "1", "3", "Nonexistent"],
+        correct: 3, // '3'
+        explanation: "Both polynomials have equal degree $3$. The limit as $n \\to \\infty$ is the ratio of their leading coefficients: $\\frac{3}{1} = 3$."
+      },
+      {
+        id: 4,
+        question: "4. Evaluate: $\\lim_{x \\to 0} \\frac{1 - \\cos^2(2x)}{(2x)^2}$",
+        options: ["0", "1/4", "1/2", "1", "Nonexistent"],
+        correct: 3, // '1'
+        explanation: "Use $1 - \\cos^2(2x) = \\sin^2(2x)$. The fraction becomes $\\left(\\frac{\\sin 2x}{2x}\\right)^2$. Since $\\lim_{u \\to 0} \\frac{\\sin u}{u} = 1$, the result is $(1)^2 = 1$."
+      },
+      {
+        id: 5,
+        question: "5. Let $f(x) = \\begin{cases} \\frac{(2x+1)(x-2)}{x-2}, & x \\neq 2 \\\\ k, & x = 2 \\end{cases}$. For what value of $k$ is $f$ continuous at $x = 2$?",
+        options: ["0", "1", "2", "3", "5"],
+        correct: 4, // '5'
+        explanation: "Cancel $(x-2)$ to get $\\lim_{x \\to 2}(2x + 1) = 2(2) + 1 = 5$. Continuity requires $f(2) = k = 5$."
+      },
+      {
+        id: 6,
+        question: "6. If $y = \\frac{ax + b}{x + c}$ has a horizontal asymptote at $y = 2$ and a vertical asymptote at $x = -3$, then $a + c = ?$",
+        options: ["-5", "-1", "0", "1", "5"],
+        correct: 4, // '5'
+        explanation: "Horizontal asymptote $y = a/1 = 2 \\implies a = 2$. Vertical asymptote $x = -3 \\implies -3 + c = 0 \\implies c = 3$. Thus $a + c = 2 + 3 = 5$."
+      },
+      {
+        id: 7,
+        question: "7. The graph of a piecewise function $f$ approaches $2$ as $x \\to 1^-$, with a solid dot at $(1, 2)$, but jumps to $4$ as $x \\to 1^+$. Which statement is true?",
+        options: [
+          "$\\lim_{x \\to -1^+} f(x)$ does not exist",
+          "$\\lim_{x \\to 1^-} f(x) = f(1)$",
+          "$\\lim_{x \\to 1} f(x)$ exists",
+          "$\\lim_{x \\to 4} f(x) = f(4)$",
+          "None of the above"
+        ],
+        correct: 1, // option B
+        explanation: "Since the curve approaches $2$ from the left and $f(1) = 2$, we have $\\lim_{x \\to 1^-} f(x) = f(1)$."
+      },
+      {
+        id: 8,
+        question: "8. A function $f$ has an open circle at $(2, 2)$ and a solid point at $(2, 3)$. If $\\lim_{x \\to c} f(x)$ exists and $f$ is not continuous at $c$, then $c = ?$",
+        options: ["-1", "1", "2", "3", "None"],
+        correct: 2, // '2'
+        explanation: "At $c = 2$, the two-sided limit is $2$ (the hole), but $f(2) = 3$. Hence the limit exists, but $f$ is not continuous."
+      },
+      {
+        id: 9,
+        question: "9. If $\\lim_{x \\to c} f(x) = L$ where $L$ is a real number, which of the following MUST be true?",
+        options: [
+          "$f$ is defined at $x = c$",
+          "$f$ is continuous at $x = c$",
+          "$f(c) = L$",
+          "None of the above",
+          "Both A and C"
+        ],
+        correct: 3, // 'None of the above'
+        explanation: "A limit only describes behavior around $c$. $f(c)$ might be completely undefined or different from $L$ without affecting the limit."
+      },
+      {
+        id: 10,
+        question: "10. Given: $f(3)=3, \\lim_{x \\to 3}f(x)=2, g(3)=8, \\lim_{x \\to 3}g(x)=8, h(3)=4, \\lim_{x \\to 3}h(x)=2$. Find $\\lim_{x \\to 3}[h(x)(2f(x)+3g(x))]$.",
+        options: ["120", "104", "56", "32", "28"],
+        correct: 2, // '56'
+        explanation: "Use limit values: $\\lim h \\cdot [2\\lim f + 3\\lim g] = 2 \\cdot [2(2) + 3(8)] = 2 \\cdot [4 + 24] = 2 \\cdot 28 = 56$."
+      },
+      {
+        id: 11,
+        question: "11. For $f(x) = x^3 - 6x + 2$, which statement is guaranteed by the Intermediate Value Theorem?",
+        options: [
+          "There exists $c \\in (0, 2)$ such that $f(c) = 0$",
+          "There exists $c \\in (1, 3)$ such that $f(c) = 4$",
+          "Both A and B are guaranteed",
+          "There exists $c \\in (0, 1)$ such that $f(c) = 5$",
+          "None of the above"
+        ],
+        correct: 2, // 'Both A and B'
+        explanation: "$f(0)=2, f(2)=-2 \\implies 0$ is between $-2$ and $2$. Also $f(1)=-3, f(3)=11 \\implies 4$ is between $-3$ and $11$. Both are guaranteed."
+      },
+      {
+        id: 12,
+        question: "12. A table shows $g(x) \\to 0$ as $x \\to 1^-$ and $g(x) \\to 0$ as $x \\to 1^+$, and $h(x) \\to 0$ from both sides, while $f(x)$ approaches $0$ on the left but $0.9$ on the right. For which functions does the table suggest $\\lim_{x \\to 1} = 0$?",
+        options: ["f only", "h only", "f and g", "g and h only", "All three"],
+        correct: 3, // 'g and h only'
+        explanation: "Both one-sided limits must equal $0$. Since $f$ jumps to $0.9$ on the right, its limit does not exist."
+      },
+      {
+        id: 13,
+        question: "13. For $x > 0$, the line $y = 1$ is an asymptote of $f(x)$. Which statement must be true?",
+        options: [
+          "$f(x) \\neq 1$ for all $x > 0$",
+          "$\\lim_{x \\to 1} f(x) = \\infty$",
+          "$\\lim_{x \\to \\infty} f(x) = 1$",
+          "$\\lim_{x \\to -\\infty} f(x) = 1$",
+          "$f(1) = 0$"
+        ],
+        correct: 2, // option C
+        explanation: "By definition, a horizontal asymptote as $x$ grows large and positive means $\\lim_{x \\to \\infty} f(x) = 1$."
+      },
+      {
+        id: 14,
+        question: "14. Find all asymptotes of $f(x) = \\frac{x}{x(x^2 - 9)}$.",
+        options: [
+          "$x = -3, x = 0, x = 3, y = 0$",
+          "$x = -3, x = 0, x = 3, y = 1$",
+          "$x = -3, x = 3, y = 0$",
+          "$x = -3, x = 3, y = 1$",
+          "$x = 3, y = 0$"
+        ],
+        correct: 2, // option C
+        explanation: "Canceling $x$ yields a hole at $x = 0$. Vertical asymptotes remain at $x = \\pm 3$. The bottom degree ($3$) exceeds top ($1$), giving horizontal asymptote $y = 0$."
+      },
+      {
+        id: 15,
+        question: "15. Let $f(x) = \\begin{cases} \\frac{x^2+x}{x}, & x \\neq 0 \\\\ 1, & x = 0 \\end{cases}$. Which are true? (I) $f(0)$ exists, (II) $\\lim_{x \\to 0}f(x)$ exists, (III) $f$ is continuous at $x = 0$.",
+        options: ["I only", "II only", "I and II only", "All of them (I, II, III)", "None of them"],
+        correct: 3, // 'All of them'
+        explanation: "$f(0) = 1$ exists. $\\lim_{x \\to 0} \\frac{x(x+1)}{x} = 0 + 1 = 1$ exists. Since $\\lim_{x \\to 0} f(x) = f(0) = 1$, $f$ is continuous."
+      },
+      // True / False Questions
+      {
+        id: 16,
+        question: "16. [True/False] $\\lim_{x \\to \\pi} \\frac{\\sin x}{x} = 0$",
+        options: ["True", "False"],
+        correct: 0, // True
+        explanation: "Direct substitution: $\\frac{\\sin(\\pi)}{\\pi} = \\frac{0}{\\pi} = 0$."
+      },
+      {
+        id: 17,
+        question: "17. [True/False] It is possible to extend the definition of a function $f$ at a jump discontinuity $x = a$ so that $f$ is continuous at $x = a$.",
+        options: ["True", "False"],
+        correct: 1, // False
+        explanation: "False! At a jump, the left and right limits do not match. Redefining a single value cannot connect two separated branches."
+      },
+      {
+        id: 18,
+        question: "18. [True/False] If $p(x)$ is a polynomial, then $f(x) = \\frac{p(x)}{x - 1}$ always has a vertical asymptote at $x = 1$.",
+        options: ["True", "False"],
+        correct: 1, // False
+        explanation: "False! If $p(x)$ has $(x - 1)$ as a factor (e.g., $p(x) = x - 1$), the factors cancel leaving a hole, not a vertical asymptote."
+      },
+      {
+        id: 19,
+        question: "19. [True/False] If $f(x)$ has a vertical asymptote at $x = c$, then either both one-sided limits must equal $+\\infty$ or both must equal $-\\infty$.",
+        options: ["True", "False"],
+        correct: 1, // False
+        explanation: "False! Consider $f(x) = 1/x$. As $x \\to 0^-, f(x) \\to -\\infty$ while as $x \\to 0^+, f(x) \\to +\\infty$. They can have opposite signs."
+      },
+      {
+        id: 20,
+        question: "20. [True/False] $\\lim_{x \\to 0} \\frac{x + \\sin x}{x} = 2$",
+        options: ["True", "False"],
+        correct: 0, // True
+        explanation: "Split the fraction: $\\lim_{x \\to 0} \\left( \\frac{x}{x} + \\frac{\\sin x}{x} \\right) = 1 + 1 = 2$."
+      }
+    ];
+
+    // --------------------------------------------------------------------------
+    // App State Management
+    // --------------------------------------------------------------------------
+    let currentSlideIdx = 0;
+    let userAnswers = {};
+    let currentDiscType = 'removable';
+
+    // Discontinuity Canvas Visualizer Logic
+    function drawDiscontinuityGraph() {
+      const canvas = document.getElementById('discontinuityCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // Draw Grid & Axes
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      // Grid lines
+      for (let x = 0; x < w; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = 0; y < h; y += 40) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+
+      // Main Axes
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2); // X axis
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); // Y axis
+      ctx.stroke();
+
+      const midX = w / 2;
+      const midY = h / 2;
+
+      ctx.lineWidth = 3;
+
+      if (currentDiscType === 'removable') {
+        // Continuous line with hole at (0, 1) and isolated point at (0, -1)
+        ctx.strokeStyle = '#818cf8';
+        ctx.beginPath();
+        ctx.moveTo(midX - 120, midY + 60);
+        ctx.lineTo(midX - 8, midY - 36);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(midX + 8, midY - 44);
+        ctx.lineTo(midX + 120, midY - 100);
+        ctx.stroke();
+
+        // Open circle (Hole) at midX, midY - 40
+        ctx.fillStyle = '#020617';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(midX, midY - 40, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        // Isolated dot at midX, midY + 40
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(midX, midY + 40, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        document.getElementById('discExplanation').innerHTML = 
+          `<span class="text-indigo-400 font-bold">Hole:</span> $\\lim_{x \\to 0} f(x) = L$ exists! But $f(0) \\neq L$. Removable!`;
+      } 
+      else if (currentDiscType === 'jump') {
+        // Left branch approaching (0, -30), Right branch starting at (0, +40)
+        ctx.strokeStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.moveTo(midX - 120, midY + 80);
+        ctx.lineTo(midX, midY + 30);
+        ctx.stroke();
+
+        // Solid dot at left end
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(midX, midY + 30, 5, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Right branch with open circle
+        ctx.strokeStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(midX, midY - 40);
+        ctx.lineTo(midX + 120, midY - 90);
+        ctx.stroke();
+
+        ctx.fillStyle = '#020617';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(midX, midY - 40, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.stroke();
+
+        document.getElementById('discExplanation').innerHTML = 
+          `<span class="text-rose-400 font-bold">Jump:</span> Left limit $\\neq$ Right limit. Two-sided limit <span class="text-rose-400">DOES NOT EXIST</span>.`;
+      } 
+      else if (currentDiscType === 'infinite') {
+        // Vertical asymptote at x = 0 (dashed line)
+        ctx.strokeStyle = '#eab308';
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(midX, 0); ctx.lineTo(midX, h);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Left branch goes down to -infinity
+        ctx.strokeStyle = '#a855f7';
+        ctx.beginPath();
+        for (let x = -130; x < -5; x += 2) {
+          const y = midY - (1 / (x / 25)) * 18;
+          if (x === -130) ctx.moveTo(midX + x, y);
+          else ctx.lineTo(midX + x, Math.max(10, Math.min(h - 10, y)));
+        }
+        ctx.stroke();
+
+        // Right branch goes up to +infinity
+        ctx.beginPath();
+        for (let x = 5; x < 130; x += 2) {
+          const y = midY - (1 / (x / 25)) * 18;
+          if (x === 5) ctx.moveTo(midX + x, Math.max(10, Math.min(h - 10, y)));
+          else ctx.lineTo(midX + x, Math.max(10, Math.min(h - 10, y)));
+        }
+        ctx.stroke();
+
+        document.getElementById('discExplanation').innerHTML = 
+          `<span class="text-amber-400 font-bold">Vertical Asymptote:</span> Function blows up to $\\pm\\infty$. Limit fails to exist as a finite number.`;
+      }
+
+      // Re-render LaTeX in the explanation box
+      if (window.renderMathInElement) {
+        renderMathInElement(document.getElementById('discExplanation'), {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ]
+        });
+      }
+    }
+
+    window.setDiscontinuityType = function(type) {
+      currentDiscType = type;
+      document.querySelectorAll('.disc-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      const activeBtn = event?.currentTarget;
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+      }
+      drawDiscontinuityGraph();
+    };
+
+    // Render the active slide
+    function renderSlide(index) {
+      if (index < 0 || index >= slidesData.length) return;
+      currentSlideIdx = index;
+      const slide = slidesData[currentSlideIdx];
+
+      const slideContentEl = document.getElementById('slideContent');
+      slideContentEl.innerHTML = `
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              ${slide.badge}
+            </span>
+            <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">${slide.title}</h2>
+          </div>
+          <button onclick="askAiAboutCurrentSlide()" class="text-xs bg-slate-700/80 hover:bg-slate-700 text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg border border-slate-600 flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-sparkles text-indigo-400"></i> Ask AI Tutor
+          </button>
+        </div>
+        <p class="text-xs md:text-sm text-slate-400 italic">${slide.summary}</p>
+        <div class="mt-4">${slide.content}</div>
+      `;
+
+      // Update Navigation & Indicators
+      document.getElementById('currentSlideLabel').innerText = `Slide ${currentSlideIdx + 1} / ${slidesData.length}`;
+      document.getElementById('prevSlideBtn').disabled = currentSlideIdx === 0;
+      document.getElementById('nextSlideBtn').disabled = currentSlideIdx === slidesData.length - 1;
+
+      // Update progress bar
+      const progressPercent = ((currentSlideIdx + 1) / slidesData.length) * 100;
+      document.getElementById('slideProgressBar').style.width = `${progressPercent}%`;
+
+      // Update pagination dots
+      const dotsContainer = document.getElementById('slideDots');
+      dotsContainer.innerHTML = slidesData.map((s, idx) => `
+        <button 
+          onclick="renderSlide(${idx})" 
+          class="w-2.5 h-2.5 rounded-full transition-all ${idx === currentSlideIdx ? 'bg-indigo-500 w-6' : 'bg-slate-700 hover:bg-slate-500'}"
+          title="Slide ${idx + 1}"
+        ></button>
+      `).join('');
+
+      // Render TOC active item
+      renderTocList();
+
+      // Render Math using KaTeX
+      if (window.renderMathInElement) {
+        renderMathInElement(document.getElementById('slideCard'), {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+
+      // If slide has the interactive canvas, redraw it
+      if (document.getElementById('discontinuityCanvas')) {
+        setTimeout(drawDiscontinuityGraph, 50);
+      }
+    }
+
+    // Populate Table of Contents dropdown
+    function renderTocList() {
+      const listEl = document.getElementById('tocList');
+      listEl.innerHTML = slidesData.map((s, i) => `
+        <button 
+          onclick="renderSlide(${i}); document.getElementById('tocMenu').classList.add('hidden')"
+          class="text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition ${i === currentSlideIdx ? 'bg-indigo-600/30 text-indigo-300 font-semibold border border-indigo-500/40' : 'text-slate-300 hover:bg-slate-700/60'}"
+        >
+          <span class="truncate">${s.title}</span>
+          ${i === currentSlideIdx ? '<i class="fa-solid fa-check text-[10px] text-indigo-400"></i>' : ''}
+        </button>
+      `).join('');
+    }
+
+    // Build & render the 15-question Practice Quiz
+    function renderQuizQuestions() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = quizData.map((q, qIdx) => `
+        <div class="bg-slate-900/80 border border-slate-700/80 p-5 rounded-xl space-y-3" id="quizCard-${q.id}">
+          <div class="text-sm font-semibold text-slate-100 flex items-start justify-between gap-3">
+            <span>${q.question}</span>
+            <span id="badge-${q.id}" class="text-[11px] px-2 py-0.5 rounded font-bold uppercase hidden"></span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            ${q.options.map((opt, optIdx) => `
+              <label class="quiz-option-label flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-800/80 border border-slate-700 hover:border-slate-600 cursor-pointer transition text-xs text-slate-300" id="optLabel-${q.id}-${optIdx}">
+                <input 
+                  type="radio" 
+                  name="question-${q.id}" 
+                  value="${optIdx}" 
+                  class="text-indigo-600 focus:ring-0 accent-indigo-600"
+                  onchange="selectAnswer(${q.id}, ${optIdx})"
+                  ${userAnswers[q.id] === optIdx ? 'checked' : ''}
+                >
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+
+          <!-- Explanation box -->
+          <div id="expl-${q.id}" class="hidden p-3 rounded-lg text-xs bg-slate-950 border border-slate-800 text-slate-300">
+            <strong class="text-indigo-400">Explanation:</strong> ${q.explanation}
+          </div>
+        </div>
+      `).join('');
+
+      // Render math
+      if (window.renderMathInElement) {
+        renderMathInElement(container, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    window.selectAnswer = function(qId, optIdx) {
+      userAnswers[qId] = optIdx;
+      updateScoreBadge();
+    };
+
+    function updateScoreBadge() {
+      let correctCount = 0;
+      let answeredCount = 0;
+      quizData.forEach(q => {
+        if (userAnswers[q.id] !== undefined) {
+          answeredCount++;
+          if (userAnswers[q.id] === q.correct) correctCount++;
+        }
+      });
+      document.getElementById('quizScoreBadge').innerText = `Answered: ${answeredCount}/${quizData.length} | Score: ${correctCount}`;
+    }
+
+    function checkAllAnswers() {
+      let score = 0;
+      quizData.forEach(q => {
+        const card = document.getElementById(`quizCard-${q.id}`);
+        const badge = document.getElementById(`badge-${q.id}`);
+        const expl = document.getElementById(`expl-${q.id}`);
+        const chosen = userAnswers[q.id];
+
+        badge.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'bg-rose-500/20', 'text-rose-400');
+        expl.classList.remove('hidden');
+
+        if (chosen === q.correct) {
+          score++;
+          badge.classList.add('bg-emerald-500/20', 'text-emerald-400');
+          badge.innerText = 'Correct';
+        } else {
+          badge.classList.add('bg-rose-500/20', 'text-rose-400');
+          badge.innerText = chosen === undefined ? 'Unanswered' : 'Incorrect';
+        }
+
+        // Highlight correct and incorrect options
+        q.options.forEach((_, optIdx) => {
+          const label = document.getElementById(`optLabel-${q.id}-${optIdx}`);
+          label.classList.remove('border-emerald-500', 'bg-emerald-950/30', 'border-rose-500', 'bg-rose-950/30');
+          if (optIdx === q.correct) {
+            label.classList.add('border-emerald-500', 'bg-emerald-950/30');
+          } else if (chosen === optIdx && chosen !== q.correct) {
+            label.classList.add('border-rose-500', 'bg-rose-950/30');
+          }
+        });
+      });
+
+      document.getElementById('quizScoreBadge').innerText = `Final Score: ${score} / ${quizData.length} (${Math.round((score/quizData.length)*100)}%)`;
+    }
+
+    function resetQuiz() {
+      userAnswers = {};
+      quizData.forEach(q => {
+        const badge = document.getElementById(`badge-${q.id}`);
+        const expl = document.getElementById(`expl-${q.id}`);
+        if (badge) badge.classList.add('hidden');
+        if (expl) expl.classList.add('hidden');
+        q.options.forEach((_, optIdx) => {
+          const label = document.getElementById(`optLabel-${q.id}-${optIdx}`);
+          if (label) {
+            label.classList.remove('border-emerald-500', 'bg-emerald-950/30', 'border-rose-500', 'bg-rose-950/30');
+          }
+        });
+        const radio = document.querySelector(`input[name="question-${q.id}"]:checked`);
+        if (radio) radio.checked = false;
+      });
+      document.getElementById('quizScoreBadge').innerText = `Score: 0 / ${quizData.length}`;
+    }
+
+    // --------------------------------------------------------------------------
+    // AI Calculus Mentor (Gemini API Integration & Offline Fallback Knowledge Base)
+    // --------------------------------------------------------------------------
+    let chatConversationHistory = [];
+    let customApiKey = "";
+
+    // Built-in intelligent answers for core topics if network / key is unavailable
+    function getOfflineKnowledgeResponse(prompt) {
+      const p = prompt.toLowerCase();
+
+      if (p.includes("hole") || p.includes("asymptote")) {
+        return `### 🎯 The "Hole vs. Vertical Asymptote" Rule
+
+When simplifying a rational function $f(x) = \\frac{P(x)}{Q(x)}$:
+
+1. **Fully factor** both the numerator and denominator.
+2. **Locate the zeros of the denominator:**
+   - **Removable Discontinuity (Hole):** If a factor $(x - c)$ cancels out completely from the denominator, $x = c$ is a **hole**.
+     - Example: $f(x) = \\frac{x(x - 3)}{x(x + 2)} = \\frac{x - 3}{x + 2}$ for $x \\neq 0$.
+     - Here, $x = 0$ is a **hole**, and its $y$-coordinate is $\\lim_{x \\to 0} f(x) = \\frac{-3}{2}$.
+   - **Vertical Asymptote:** If a factor $(x - c)$ **remains in the denominator** after all cancellation, $x = c$ is a **vertical asymptote**.
+     - In the example above, $x = -2$ remains $\\implies x = -2$ is a vertical asymptote!
+
+💡 **Key Takeaway for Exam Problem 14:** In $f(x) = \\frac{x}{x(x^2 - 9)}$, the factor $x$ cancels, making $x = 0$ a hole, while $x = \\pm 3$ remain as vertical asymptotes!`;
+      }
+
+      if (p.includes("continuity") || p.includes("3-part") || p.includes("three")) {
+        return `### ⚡ The 3-Part Definition of Continuity at $x = c$
+
+On the AP exam, to prove $f(x)$ is continuous at $x = c$, you must show:
+
+1. **$f(c)$ is defined** (there is a real output value, not undefined).
+2. **$\\lim_{x \\to c} f(x)$ exists:**
+   $$\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = L$$
+   (The left-hand limit equals the right-hand limit).
+3. **The limit equals the function value:**
+   $$\\lim_{x \\to c} f(x) = f(c)$$
+
+⚠️ **Common AP Trap:** Just because $\\lim_{x \\to c} f(x)$ exists does **not** mean $f$ is continuous (a graph can have a hole with an isolated point elsewhere)!`;
+      }
+
+      if (p.includes("ivt") || p.includes("intermediate")) {
+        return `### 📐 Intermediate Value Theorem (IVT)
+
+**Hypothesis (Check this first!):**
+$f(x)$ must be **continuous** on the closed interval $[a, b]$.
+
+**Conclusion:**
+If $u$ is any number strictly between $f(a)$ and $f(b)$, then there exists at least one number $c \\in (a, b)$ such that:
+$$f(c) = u$$
+
+**Typical Problem (Problem 11):**
+For $f(x) = x^3 - 6x + 2$:
+- $f(0) = 2$ and $f(2) = -2$. Since $0$ is between $-2$ and $2$, IVT guarantees a root $f(c) = 0$ on $(0, 2)$!`;
+      }
+
+      if (p.includes("slide")) {
+        const slide = slidesData[currentSlideIdx];
+        return `### 💡 Deep Dive: ${slide.title}
+
+**Key Idea:** ${slide.summary}
+
+**Exam Strategies for This Topic:**
+- Keep your notation rigorous: always write $\\lim_{x \\to c}$ until you actually evaluate by substitution.
+- Watch out for directional limits ($x \\to c^-$ vs $x \\to c^+$).
+- For polynomials as $x \\to \\pm\\infty$, focus exclusively on the ratio of the highest-degree terms.
+
+Need help walking through a specific problem on this slide? Ask away!`;
+      }
+
+      if (p.includes("problem 2") || p.includes("5x^4")) {
+        return `### 🔍 Walkthrough: Problem 2
+$$\\lim_{x \\to 0} \\frac{5x^4 + 8x^2}{3x^4 - 16x^2}$$
+1. Direct substitution gives $\\frac{0}{0}$ (indeterminate form).
+2. Factor out the lowest power of $x$, which is $x^2$:
+   $$\\frac{x^2(5x^2 + 8)}{x^2(3x^2 - 16)}$$
+3. Cancel $x^2$ for $x \\neq 0$:
+   $$= \\lim_{x \\to 0} \\frac{5x^2 + 8}{3x^2 - 16} = \\frac{5(0) + 8}{3(0) - 16} = \\frac{8}{-16} = -\\frac{1}{2}$$`;
+      }
+
+      return `### 🎓 AP Calculus Tutor Response
+
+Regarding **"${escapeHtml(prompt)}"**:
+
+Here is the key calculus principle:
+- **Limits describe behavior around a point**, not at the point itself.
+- For $\\frac{0}{0}$ indeterminate forms: factor, rationalize with conjugates, or use standard trig limits such as $\\lim_{u \\to 0} \\frac{\\sin u}{u} = 1$.
+- When finding unknown parameters $k$ in piecewise functions, set the left limit, right limit, and point value equal:
+  $$\\lim_{x \\to c^-} f(x) = \\lim_{x \\to c^+} f(x) = f(c)$$
+
+Ask me about any specific test question (1 to 20) or click one of the quick prompt buttons above!`;
+    }
+
+    async function callGeminiApi(promptText) {
+      const effectiveKey = customApiKey.trim();
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${effectiveKey}`;
+
+      const systemPrompt = `You are a warm, witty, and exceptionally clear AP Calculus tutor. 
+Your student is preparing for their Limits and Continuity unit test.
+Topics covered include:
+- Graphical limits, one-sided limits, and removable vs jump vs infinite discontinuities.
+- Indeterminate 0/0 limits solved by factoring or cancellation.
+- Limits at infinity and horizontal asymptotes (comparing polynomial degrees).
+- Trig limits using the standard limit: lim (sin u)/u = 1 and 1 - cos^2(u) = sin^2(u).
+- Piecewise functions: finding parameters (like k, a, b) to ensure continuity.
+- Distinguishing removable holes from vertical asymptotes.
+- The 3-part definition of continuity at a point x = c.
+- The Intermediate Value Theorem (IVT).
+- True/False reasoning on asymptotes and limits.
+
+Format your responses concisely using Markdown and LaTeX ($...$ for inline and $$...$$ for block).
+Always be encouraging, break complex math steps down into numbered bite-sized actions, and test the student's understanding at the end with a quick check.`;
+
+      // Build turn
+      const currentTurn = { role: "user", parts: [{ text: promptText }] };
+      const testHistory = [...chatConversationHistory, currentTurn];
+
+      const payload = {
+        contents: testHistory,
+        systemInstruction: {
+          parts: [{ text: systemPrompt }]
+        }
+      };
+
+      // Exponential backoff fetch retry
+      let delay = 1000;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          const replyText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (replyText) {
+            // Commit to history only on success
+            chatConversationHistory.push(currentTurn);
+            chatConversationHistory.push({
+              role: "model",
+              parts: [{ text: replyText }]
+            });
+            return replyText;
+          } else {
+            throw new Error("Empty candidate received");
+          }
+        } catch (err) {
+          if (attempt === 1) throw err;
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    function appendChatMessage(role, text) {
+      const container = document.getElementById('aiChatMessages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex gap-2.5 ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+
+      if (role === 'user') {
+        msgDiv.innerHTML = `
+          <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm max-w-[85%] leading-relaxed shadow-sm">
+            ${escapeHtml(text)}
+          </div>
+        `;
+      } else {
+        msgDiv.innerHTML = `
+          <div class="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
+            <i class="fa-solid fa-sparkles text-xs"></i>
+          </div>
+          <div class="bg-slate-700/60 border border-slate-600/50 p-3 rounded-2xl rounded-tl-sm text-slate-200 leading-relaxed shadow-sm max-w-[88%] prose prose-invert prose-sm">
+            ${window.marked ? marked.parse(text) : text}
+          </div>
+        `;
+      }
+
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+
+      // Render math in the new message
+      if (window.renderMathInElement) {
+        renderMathInElement(msgDiv, {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function escapeHtml(string) {
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function handleUserChatMessage(userQuery) {
+      if (!userQuery.trim()) return;
+      const input = document.getElementById('aiChatInput');
+      const sendBtn = document.getElementById('sendAiBtn');
+      input.value = '';
+      sendBtn.disabled = true;
+
+      appendChatMessage('user', userQuery);
+
+      // Loading bubble
+      const container = document.getElementById('aiChatMessages');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'aiTypingIndicator';
+      loadingDiv.className = 'flex gap-2.5 items-center text-slate-400 text-xs pl-2';
+      loadingDiv.innerHTML = `
+        <i class="fa-solid fa-circle-notch animate-spin text-indigo-400"></i>
+        <span>Thinking step-by-step...</span>
+      `;
+      container.appendChild(loadingDiv);
+      container.scrollTop = container.scrollHeight;
+
+      try {
+        const reply = await callGeminiApi(userQuery);
+        loadingDiv.remove();
+        appendChatMessage('ai', reply);
+      } catch (e) {
+        loadingDiv.remove();
+        // Fall back gracefully to the rich built-in AP Calculus knowledge base
+        const fallbackReply = getOfflineKnowledgeResponse(userQuery);
+        appendChatMessage('ai', fallbackReply);
+      } finally {
+        sendBtn.disabled = false;
+        input.focus();
+      }
+    }
+
+    window.askAiAboutCurrentSlide = function() {
+      const slide = slidesData[currentSlideIdx];
+      openAiDrawer();
+      handleUserChatMessage(`Can you give me a deep dive and an intuitive example on "${slide.title}"? Focus on common mistakes students make on AP exams for this topic.`);
+    };
+
+    function openAiDrawer() {
+      document.getElementById('aiDrawer').classList.remove('translate-x-full');
+    }
+
+    function closeAiDrawer() {
+      document.getElementById('aiDrawer').classList.add('translate-x-full');
+    }
+
+    // --------------------------------------------------------------------------
+    // Event Listeners & Initialization
+    // --------------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize first slide and quiz
+      renderSlide(0);
+      renderQuizQuestions();
+
+      // Render math on initial chat messages
+      if (window.renderMathInElement) {
+        renderMathInElement(document.getElementById('aiChatMessages'), {
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+          ],
+          throwOnError: false
+        });
+      }
+
+      // Slide Navigation
+      document.getElementById('prevSlideBtn').addEventListener('click', () => {
+        if (currentSlideIdx > 0) renderSlide(currentSlideIdx - 1);
+      });
+      document.getElementById('nextSlideBtn').addEventListener('click', () => {
+        if (currentSlideIdx < slidesData.length - 1) renderSlide(currentSlideIdx + 1);
+      });
+
+      // Keyboard arrow shortcuts
+      window.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          if (currentSlideIdx < slidesData.length - 1) renderSlide(currentSlideIdx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          if (currentSlideIdx > 0) renderSlide(currentSlideIdx - 1);
+        }
+      });
+
+      // TOC Dropdown toggle
+      const tocBtn = document.getElementById('tocBtn');
+      const tocMenu = document.getElementById('tocMenu');
+      tocBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        tocMenu.classList.toggle('hidden');
+      });
+      document.addEventListener('click', (e) => {
+        if (!tocBtn.contains(e.target) && !tocMenu.contains(e.target)) {
+          tocMenu.classList.add('hidden');
+        }
+      });
+
+      // Quiz Modal Toggle
+      const quizModal = document.getElementById('quizModal');
+      document.getElementById('toggleQuizBtn').addEventListener('click', () => {
+        quizModal.classList.remove('hidden');
+      });
+      document.getElementById('closeQuizBtn').addEventListener('click', () => {
+        quizModal.classList.add('hidden');
+      });
+      document.getElementById('checkAllQuizBtn').addEventListener('click', checkAllAnswers);
+      document.getElementById('resetQuizBtn').addEventListener('click', resetQuiz);
+
+      // AI Drawer Toggles
+      document.getElementById('openAiBtn').addEventListener('click', openAiDrawer);
+      document.getElementById('closeAiBtn').addEventListener('click', closeAiDrawer);
+
+      // API Key Config Toggle
+      const apiKeyToggleBtn = document.getElementById('apiKeyToggleBtn');
+      const apiKeyBanner = document.getElementById('apiKeyBanner');
+      apiKeyToggleBtn?.addEventListener('click', () => {
+        apiKeyBanner.classList.toggle('hidden');
+      });
+
+      document.getElementById('saveApiKeyBtn')?.addEventListener('click', () => {
+        const val = document.getElementById('customApiKeyInput').value;
+        customApiKey = val;
+        apiKeyBanner.classList.add('hidden');
+        appendChatMessage('ai', '✅ API key saved for this session!');
+      });
+
+      // AI Chat Form
+      document.getElementById('aiChatForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('aiChatInput');
+        handleUserChatMessage(input.value);
+      });
+
+      // Quick Prompt Buttons
+      document.querySelectorAll('.quick-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          handleUserChatMessage(btn.innerText.replace(/^[^\w\s]+/, '').trim());
+        });
+      });
+
+      // Resize canvas listener
+      window.addEventListener('resize', () => {
+        if (document.getElementById('discontinuityCanvas')) {
+          drawDiscontinuityGraph();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
