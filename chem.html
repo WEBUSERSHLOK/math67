@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honors Chemistry I — Unit 1 Digital Course</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React 18 & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- KaTeX for crisp LaTeX math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-border {
+            position: relative;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, #0284c7, #6366f1, #a855f7);
+            padding: 1px;
+        }
+        .gradient-border-inner {
+            background: #1e293b;
+            border-radius: calc(0.75rem - 1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen custom-scrollbar">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Master Objective Checklist directly from official PDF (19 Objectives)
+        const MASTER_OBJECTIVES = [
+            { id: 1, text: "Differentiate inorganic chemistry and organic chemistry.", section: "Section 1", targetSec: 1 },
+            { id: 2, text: "Differentiate science and technology.", section: "Section 2", targetSec: 2 },
+            { id: 3, text: "Describe law, hypothesis, theory, controlled experiment.", section: "Section 3", targetSec: 3 },
+            { id: 4, text: "Make a complete graph.", section: "Section 4", targetSec: 4 },
+            { id: 5, text: "Measure properly.", section: "Section 5", targetSec: 5 },
+            { id: 6, text: "Differentiate between qualitative and quantitative descriptions.", section: "Section 6", targetSec: 6 },
+            { id: 7, text: "Know meaning/use of SI base units (m, kg, s, K, mol) & prefixes (k, h, da, d, c, m, µ, n).", section: "Section 7", targetSec: 7 },
+            { id: 8, text: "Convert within the SI system.", section: "Section 8", targetSec: 8 },
+            { id: 9, text: "State relationship between cm³ & mL; and dm³ & L.", section: "Section 9", targetSec: 9 },
+            { id: 10, text: "Differentiate between mass and weight.", section: "Section 10", targetSec: 10 },
+            { id: 11, text: "Convert between Celsius and Kelvin temperature scales.", section: "Section 11", targetSec: 11 },
+            { id: 12, text: "Describe how uncertainty is related to measurement.", section: "Section 12", targetSec: 12 },
+            { id: 13, text: "Determine number of significant figures in a measurement.", section: "Section 13", targetSec: 13 },
+            { id: 14, text: "Follow rules of significant figures in calculations.", section: "Section 14", targetSec: 14 },
+            { id: 15, text: "Convert numbers from scientific notation to standard form and vice versa.", section: "Section 15", targetSec: 15 },
+            { id: 16, text: "Use scientific notation in mathematics (with and without calculator).", section: "Section 15", targetSec: 15 },
+            { id: 17, text: "Solve problems using unit analysis (dimensional analysis, fence-posting, factor-label).", section: "Section 16", targetSec: 16 },
+            { id: 18, text: "Solve problems using the 'five step method of solving problems'.", section: "Section 17", targetSec: 17 },
+            { id: 19, text: "Define key terminology (chemistry, macroscopic, microscopic, derived units, non-SI, absolute/relative scales, IV, DV, relationships).", section: "Section 18", targetSec: 18 }
+        ];
+
+        // Course Map Sections Definition
+        const COURSE_SECTIONS = [
+            { id: 1, title: "Section 1 — Introduction to Chemistry", status: "active", desc: "What chemistry is, macroscopic vs microscopic, areas of chemistry, inorganic vs organic." },
+            { id: 2, title: "Section 2 — Science and Technology", status: "locked", desc: "Science definition, technology definition, interactions, real-world examples, misconceptions." },
+            { id: 3, title: "Section 3 — Scientific Method", status: "locked", desc: "Observations, hypotheses, variables (IV, DV, Control), law vs theory, experimental design." },
+            { id: 4, title: "Section 4 — Graphing", status: "locked", desc: "Parts of a graph, scale, axes, best-fit lines, direct/inverse relationships." },
+            { id: 5, title: "Section 5 — Measurement", status: "locked", desc: "Proper reading, instruments, precision, estimated digits, uncertainty." },
+            { id: 6, title: "Section 6 — Qualitative vs. Quantitative", status: "locked", desc: "Qualitative observations vs quantitative measurements, classification activities." },
+            { id: 7, title: "Section 7 — SI System", status: "locked", desc: "Base units (m, kg, s, K, mol), metric prefixes (kilo to nano), power of 10 ladder." },
+            { id: 8, title: "Section 8 — SI Conversions", status: "locked", desc: "Step-by-step metric conversions, unit cancellation, multi-step metric problems." },
+            { id: 9, title: "Section 9 — Volume Relationships", status: "locked", desc: "1 cm³ = 1 mL and 1 dm³ = 1 L equivalences and visual 3D derivations." },
+            { id: 10, title: "Section 10 — Mass vs. Weight", status: "locked", desc: "Mass vs gravity-dependent weight, spring scale vs balance, cosmic environments." },
+            { id: 11, title: "Section 11 — Temperature", status: "locked", desc: "Celsius, Kelvin, absolute zero, relative vs absolute scales, K = °C + 273.15." },
+            { id: 12, title: "Section 12 — Uncertainty and Measurement", status: "locked", desc: "Sources of uncertainty, instrument limits, expressing measurement error." },
+            { id: 13, title: "Section 13 — Significant Figures", status: "locked", desc: "Atlantic-Pacific rule, nonzero, captive, leading, trailing zeros, exact numbers." },
+            { id: 14, title: "Section 14 — Sig Figs in Calculations", status: "locked", desc: "Addition/Subtraction (decimal places) vs Multiplication/Division (sig figs)." },
+            { id: 15, title: "Section 15 — Scientific Notation", status: "locked", desc: "Standard to sci notation, exponent math, calculator EE/EXP button mastery." },
+            { id: 16, title: "Section 16 — Dimensional Analysis", status: "locked", desc: "Unit analysis, factor-label method, conversion factors, multi-step fence posting." },
+            { id: 17, title: "Section 17 — Five-Step Method of Problem Solving", status: "locked", desc: "Given, Unknown, Formula/Setup, Calculation, Check (Units/Sig Figs/Sense)." },
+            { id: 18, title: "Section 18 — Key Vocabulary & Master Review", status: "locked", desc: "Complete interactive glossary, flashcards, diagnostic quiz, master exam." }
+        ];
+
+        function ChemistryApp() {
+            const [activeTab, setActiveTab] = useState('course-map'); // 'course-map', 'checklist', 'section-1', 'mistakes', 'tracker'
+            const [slideIndex, setSlideIndex] = useState(0); // Slide switcher within Section 1
+            const [mistakeBank, setMistakeBank] = useState([]);
+            const [practiceStats, setPracticeStats] = useState({ completed: 0, correct: 0 });
+            const [isChatMinimized, setIsChatMinimized] = useState(false);
+
+            // Interactive state for visual sorting activity in Section 1
+            const [sortingItems, setSortingItems] = useState([
+                { id: 1, name: "Methane gas (CH₄) in stove", category: "organic", placed: null },
+                { id: 2, name: "Table salt (NaCl)", category: "inorganic", placed: null },
+                { id: 3, name: "Glucose sugar (C₆H₁₂O₆)", category: "organic", placed: null },
+                { id: 4, name: "Water (H₂O)", category: "inorganic", placed: null },
+                { id: 5, name: "DNA molecule", category: "organic", placed: null },
+                { id: 6, name: "Rust / Iron Oxide (Fe₂O₃)", category: "inorganic", placed: null },
+                { id: 7, name: "Carbon Dioxide (CO₂) [Exception]", category: "inorganic", placed: null },
+                { id: 8, name: "Rubbing Alcohol (C₃H₈O)", category: "organic", placed: null },
+            ]);
+            const [sortingScore, setSortingScore] = useState(null);
+
+            // Practice Center Quiz State for Section 1
+            const [mcqAnswers, setMcqAnswers] = useState({});
+            const [shortAnswerText, setShortAnswerText] = useState({});
+            const [tfAnswers, setTfAnswers] = useState({});
+            const [checkpointSubmitted, setCheckpointSubmitted] = useState(false);
+
+            // AI Chemistry Tutor Chatbot State
+            const [chatMessages, setChatMessages] = useState([
+                { sender: 'bot', text: "Hello! I am your AI Chemistry Tutor for Honors Chemistry I. Ask me anything about Section 1 (What Chemistry is, Macroscopic vs Microscopic, Organic vs Inorganic, or Everyday Examples)!" }
+            ]);
+            const [chatInput, setChatInput] = useState('');
+            const [hintLevel, setHintLevel] = useState(0);
+
+            // Handle Sorting Drag/Drop / Click Placement
+            const handlePlaceItem = (itemId, targetCategory) => {
+                setSortingItems(prev => prev.map(item => item.id === itemId ? { ...item, placed: targetCategory } : item));
+            };
+
+            const checkSortingResults = () => {
+                let correctCount = 0;
+                sortingItems.forEach(item => {
+                    if (item.placed === item.category) correctCount++;
+                });
+                setSortingScore(correctCount);
+            };
+
+            const resetSorting = () => {
+                setSortingItems(prev => prev.map(item => ({ ...item, placed: null })));
+                setSortingScore(null);
+            };
+
+            // AI Tutor Interactive Chat Engine
+            const handleSendMessage = (e) => {
+                e.preventDefault();
+                if (!chatInput.trim()) return;
+
+                const userMsg = chatInput.trim();
+                const newMessages = [...chatMessages, { sender: 'user', text: userMsg }];
+                setChatMessages(newMessages);
+                setChatInput('');
+
+                // Custom AI Tutor Logic with step-by-step hinting structure
+                setTimeout(() => {
+                    let botReply = "";
+                    const lower = userMsg.toLowerCase();
+
+                    if (lower.includes("organic") && lower.includes("inorganic")) {
+                        botReply = "Organic chemistry primarily focuses on carbon-containing compounds (like C₆H₁₂O₆, CH₄, proteins), with a few exceptions like CO, CO₂, and carbonates. Inorganic chemistry studies non-carbon substances, minerals, metals, and salts (like NaCl, H₂O, Fe₂O₃). What compound would you like to classify together?";
+                    } else if (lower.includes("macroscopic") || lower.includes("microscopic")) {
+                        botReply = "Great question! Macroscopic refers to things you can observe directly with your five senses (like rust forming on a car, water boiling, or a solution changing color). Microscopic (or submicroscopic) refers to the atomic and molecular level that you cannot see directly (like iron atoms reacting with O₂ molecules to form Fe₂O₃ crystals).";
+                    } else if (lower.includes("hint") || lower.includes("help")) {
+                        if (hintLevel === 0) {
+                            botReply = "💡 HINT 1: Remember that chemistry is the central science studying matter and the changes it undergoes. Look at whether carbon is present in the molecular structure.";
+                            setHintLevel(1);
+                        } else if (hintLevel === 1) {
+                            botReply = "💡 HINT 2 (More Specific): Carbon compounds bonded with hydrogen are organic. Compounds without carbon or oxides like CO₂ are inorganic!";
+                            setHintLevel(2);
+                        } else {
+                            botReply = "🔍 STEP-BY-STEP GUIDANCE: 1) Identify formula. 2) Check for C-H bonds or carbon backbone. 3) If yes (and not CO/CO₂/carbonates), it is Organic! If no, it is Inorganic.";
+                            setHintLevel(0);
+                        }
+                    } else if (lower.includes("what is chemistry")) {
+                        botReply = "Chemistry is the scientific study of matter, its structure, properties, composition, and the energy changes that accompany chemical reactions.";
+                    } else {
+                        botReply = `That's a great question about Section 1! In Honors Chemistry, always remember to connect macroscopic observations (what you see in the lab) to microscopic structures (molecules and atoms). Would you like a hint or a step-by-step example on this topic?`;
+                    }
+
+                    setChatMessages([...newMessages, { sender: 'bot', text: botReply }]);
+                }, 600);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100">
+                    {/* Top Navigation Header */}
+                    <header className="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+                        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg font-bold text-white text-xl">
+                                    🧪
+                                </div>
+                                <div>
+                                    <h1 className="font-extrabold text-lg tracking-tight text-white">Honors Chemistry I</h1>
+                                    <p className="text-xs text-cyan-400 font-medium">Unit 1: Intro, Measurement & Problem Solving</p>
+                                </div>
+                            </div>
+
+                            {/* Nav Tabs */}
+                            <nav className="flex items-center space-x-2 text-sm">
+                                <button 
+                                    onClick={() => setActiveTab('course-map')}
+                                    className={`px-3 py-1.5 rounded-lg transition font-medium ${activeTab === 'course-map' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700'}`}>
+                                    🗺️ Course Map
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('checklist')}
+                                    className={`px-3 py-1.5 rounded-lg transition font-medium ${activeTab === 'checklist' ? 'bg-cyan-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700'}`}>
+                                    📋 Objective Checklist
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('section-1')}
+                                    className={`px-3 py-1.5 rounded-lg transition font-medium ${activeTab === 'section-1' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700'}`}>
+                                    ⚡ Section 1 (Active)
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('tracker')}
+                                    className={`px-3 py-1.5 rounded-lg transition font-medium ${activeTab === 'tracker' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700'}`}>
+                                    📊 Progress Dashboard
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('mistakes')}
+                                    className={`px-3 py-1.5 rounded-lg transition font-medium ${activeTab === 'mistakes' ? 'bg-rose-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700'}`}>
+                                    ⚠️ Mistake Bank ({mistakeBank.length})
+                                </button>
+                            </nav>
+                        </div>
+                    </header>
+
+                    {/* Main Container */}
+                    <main className="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+                        {/* TAB 1: COURSE MAP */}
+                        {activeTab === 'course-map' && (
+                            <div className="space-y-6">
+                                <div className="bg-gradient-to-r from-slate-800 to-slate-800/60 p-6 rounded-2xl border border-slate-700">
+                                    <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                        <span>🗺️</span> Unit 1 Course Roadmap
+                                    </h2>
+                                    <p className="text-slate-300 text-sm leading-relaxed">
+                                        Welcome to Honors Chemistry I! Below is your complete 18-section interactive curriculum roadmap. Every single objective from your official Unit 1 syllabus is comprehensively mapped and integrated.
+                                    </p>
+                                    <div className="mt-4 flex flex-wrap gap-4 text-xs font-semibold">
+                                        <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                                            🟢 Active: Section 1 Available Now
+                                        </span>
+                                        <span className="px-3 py-1 rounded-full bg-slate-700/50 text-slate-400 border border-slate-600">
+                                            🔒 Sections 2–18 Unlocked Sequentially
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {COURSE_SECTIONS.map((sec) => (
+                                        <div key={sec.id} className={`p-5 rounded-xl border transition-all ${
+                                            sec.id === 1 
+                                                ? 'bg-gradient-to-b from-slate-800 to-indigo-950/40 border-indigo-500 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500' 
+                                                : 'bg-slate-800/40 border-slate-700/60 opacity-75 hover:opacity-100'
+                                        }`}>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className={`text-xs px-2.5 py-1 rounded-md font-semibold ${
+                                                    sec.id === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-400'
+                                                }`}>
+                                                    {sec.id === 1 ? 'CURRENT SECTION' : 'UPCOMING'}
+                                                </span>
+                                                {sec.id === 1 ? (
+                                                    <span className="text-emerald-400 text-xs font-semibold flex items-center gap-1">
+                                                        <span>●</span> Ready to Learn
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-500 text-xs">Locked</span>
+                                                )}
+                                            </div>
+                                            <h3 className="font-bold text-base text-slate-100 mb-1">{sec.title}</h3>
+                                            <p className="text-xs text-slate-400 leading-relaxed mb-4">{sec.desc}</p>
+                                            
+                                            {sec.id === 1 ? (
+                                                <button 
+                                                    onClick={() => setActiveTab('section-1')}
+                                                    className="w-full py-2 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition flex items-center justify-center gap-2">
+                                                    <span>Launch Section 1</span>
+                                                    <span>→</span>
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    disabled 
+                                                    className="w-full py-2 px-4 rounded-lg bg-slate-800 text-slate-500 text-xs font-medium cursor-not-allowed border border-slate-700">
+                                                    Unlocks after Section {sec.id - 1}
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 2: MASTER OBJECTIVE CHECKLIST */}
+                        {activeTab === 'checklist' && (
+                            <div className="space-y-6">
+                                <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                                    <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                        <span>📋</span> Master Objective Checklist (Official Unit 1 Objectives)
+                                    </h2>
+                                    <p className="text-slate-300 text-sm">
+                                        These 19 numbered objectives come directly from your official H Chemistry I Unit 1 syllabus document. Every objective is tracked to guarantee 100% coverage.
+                                    </p>
+                                </div>
+
+                                <div className="bg-slate-800/80 rounded-xl border border-slate-700 overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="bg-slate-900/80 text-xs text-slate-400 uppercase tracking-wider border-b border-slate-700">
+                                                <tr>
+                                                    <th className="py-3.5 px-4 font-semibold">#</th>
+                                                    <th className="py-3.5 px-4 font-semibold">Official Objective Statement</th>
+                                                    <th className="py-3.5 px-4 font-semibold">Course Section</th>
+                                                    <th className="py-3.5 px-4 font-semibold text-center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-700/50">
+                                                {MASTER_OBJECTIVES.map((obj) => (
+                                                    <tr key={obj.id} className="hover:bg-slate-700/30 transition">
+                                                        <td className="py-3 px-4 font-bold text-cyan-400">{obj.id}</td>
+                                                        <td className="py-3 px-4 text-slate-200 font-medium">{obj.text}</td>
+                                                        <td className="py-3 px-4 text-xs font-semibold">
+                                                            <span className={`px-2.5 py-1 rounded-md ${
+                                                                obj.targetSec === 1 ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-700 text-slate-400'
+                                                            }`}>
+                                                                {obj.section}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-4 text-center">
+                                                            {obj.targetSec === 1 ? (
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                                    ● Covered in Sec 1
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-700 text-slate-400">
+                                                                    Upcoming
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 3: SECTION 1 COMPLETE INTERACTIVE MODULE */}
+                        {activeTab === 'section-1' && (
+                            <div className="space-y-8">
+                                {/* Section Header */}
+                                <div className="bg-gradient-to-r from-indigo-900/60 via-slate-800 to-slate-900 p-6 rounded-2xl border border-indigo-500/40 shadow-xl">
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                                                    SECTION 1 OF 18
+                                                </span>
+                                                <span className="text-xs text-slate-400">Textbook Reference: Chapters 1 & 2</span>
+                                            </div>
+                                            <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                                                Introduction to Chemistry
+                                            </h2>
+                                            <p className="text-slate-300 text-sm mt-1 max-w-2xl">
+                                                Discover what chemistry is, explore macroscopic vs. microscopic realms, master the branches of chemistry, and clearly differentiate organic from inorganic compounds.
+                                            </p>
+                                        </div>
+
+                                        {/* Slide Progress Navigator */}
+                                        <div className="bg-slate-900/80 p-3 rounded-xl border border-slate-700 flex flex-col items-end gap-2">
+                                            <div className="text-xs font-semibold text-slate-400">
+                                                Module Interactive Navigator
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                {[0, 1, 2, 3, 4, 5, 6, 7].map((idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => setSlideIndex(idx)}
+                                                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                                                            slideIndex === idx 
+                                                                ? 'bg-indigo-600 text-white shadow-md' 
+                                                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                                        }`}>
+                                                        {idx + 1}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <span className="text-[11px] text-cyan-400 font-medium">
+                                                {slideIndex === 0 && "1. Introduction & Objectives"}
+                                                {slideIndex === 1 && "2. What Chemistry Is & Studies"}
+                                                {slideIndex === 2 && "3. Macroscopic vs. Microscopic"}
+                                                {slideIndex === 3 && "4. Everyday Chemistry Examples"}
+                                                {slideIndex === 4 && "5. Major Branches of Chemistry"}
+                                                {slideIndex === 5 && "6. Organic vs. Inorganic (Deep Dive)"}
+                                                {slideIndex === 6 && "7. Interactive Sorting Lab"}
+                                                {slideIndex === 7 && "8. Practice Center & Checkpoint"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SLIDE CONTENT CONTAINER */}
+                                <div className="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 md:p-8 shadow-2xl min-h-[500px]">
+
+                                    {/* SLIDE 0: SECTION INTRO & OBJECTIVES */}
+                                    {slideIndex === 0 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400 flex items-center gap-2">
+                                                    📌 1. Section Introduction & Objectives
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Welcome to your first step in Honors Chemistry I! Before diving into formulas and equations, we must understand the scope of chemistry.
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                <div className="bg-slate-900/70 p-5 rounded-xl border border-indigo-500/30">
+                                                    <h4 className="font-bold text-indigo-300 text-sm mb-2 flex items-center gap-2">
+                                                        🎯 Official Objective #1
+                                                    </h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <span className="font-semibold text-white">Differentiate inorganic chemistry and organic chemistry.</span> You will learn to categorize substances based on carbon structure and chemical properties.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/70 p-5 rounded-xl border border-indigo-500/30">
+                                                    <h4 className="font-bold text-cyan-300 text-sm mb-2 flex items-center gap-2">
+                                                        🎯 Official Objective #19 (Part 1)
+                                                    </h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <span className="font-semibold text-white">Define chemistry, macroscopic, and microscopic.</span> Build foundational honors-level vocabulary with formal and student-friendly definitions.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/70 p-5 rounded-xl border border-indigo-500/30">
+                                                    <h4 className="font-bold text-purple-300 text-sm mb-2 flex items-center gap-2">
+                                                        💡 Why It Matters in Real Life
+                                                    </h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        Every liquid you drink, every device battery charging, every medicine, and even your thoughts (neurotransmitters) are governed by chemical processes!
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-indigo-950/40 p-5 rounded-xl border border-indigo-500/30 mt-4">
+                                                <h4 className="font-bold text-indigo-200 text-sm mb-2">
+                                                    🧠 Honors Chemistry Mental Framework
+                                                </h4>
+                                                <p className="text-xs text-slate-300 leading-relaxed">
+                                                    In Honors Chemistry, we do not just memorize facts. We connect <span className="text-cyan-300 font-semibold">what we see in the laboratory (macroscopic level)</span> directly to <span className="text-indigo-300 font-semibold">how atoms and molecules interact (microscopic level)</span>.
+                                                </p>
+                                            </div>
+
+                                            <div className="flex justify-end mt-6">
+                                                <button 
+                                                    onClick={() => setSlideIndex(1)}
+                                                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2 shadow-lg">
+                                                    <span>Next: What Chemistry Is & Studies</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 1: WHAT CHEMISTRY IS & STUDIES */}
+                                    {slideIndex === 1 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    🔬 2. What Chemistry Is & What Chemistry Studies
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Formal Definition vs. Student-Friendly Breakdown
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="bg-slate-900/80 p-6 rounded-xl border border-slate-700 space-y-3">
+                                                    <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Formal Definition</span>
+                                                    <h4 className="text-xl font-bold text-white">Chemistry</h4>
+                                                    <p className="text-sm text-slate-300 leading-relaxed">
+                                                        <span className="text-cyan-300 font-semibold">Chemistry</span> is the branch of physical science that studies <span className="text-amber-300 font-semibold">matter</span>, its composition, structure, physical and chemical properties, and the changes (reactions) it undergoes along with the energy absorbed or released during these processes.
+                                                    </p>
+                                                    <div className="p-3 bg-slate-800 rounded-lg text-xs text-slate-400 border border-slate-700">
+                                                        💬 <span className="font-semibold text-slate-200">Remember like this:</span> Chemistry is the "stuff" science—studying what stuff is made of and how stuff changes!
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-6 rounded-xl border border-slate-700 space-y-3">
+                                                    <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">Core Focus Areas</span>
+                                                    <h4 className="text-xl font-bold text-white">What Chemistry Studies</h4>
+                                                    <ul className="space-y-2 text-xs text-slate-300">
+                                                        <li className="flex items-start gap-2">
+                                                            <span className="text-cyan-400 font-bold">•</span>
+                                                            <span><strong className="text-white">Matter:</strong> Anything that has mass and takes up volume (occupies space).</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2">
+                                                            <span className="text-cyan-400 font-bold">•</span>
+                                                            <span><strong className="text-white">Structure & Composition:</strong> How atoms are arranged, bonded, and organized into molecules or crystal lattices.</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2">
+                                                            <span className="text-cyan-400 font-bold">•</span>
+                                                            <span><strong className="text-white">Properties:</strong> How substances behave (boiling point, reactivity, flammability, density).</span>
+                                                        </li>
+                                                        <li className="flex items-start gap-2">
+                                                            <span className="text-cyan-400 font-bold">•</span>
+                                                            <span><strong className="text-white">Changes & Energy:</strong> How chemical bonds break and form to create brand new substances.</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            {/* Interactive Concept Check Card */}
+                                            <div className="p-5 rounded-xl bg-indigo-950/50 border border-indigo-500/40">
+                                                <h4 className="font-bold text-indigo-300 text-sm mb-2">
+                                                    ⚡ Quick Interactive Check: Is Light or Heat considered "Matter"?
+                                                </h4>
+                                                <p className="text-xs text-slate-300 mb-3">
+                                                    Think carefully based on the definition of matter (must have mass and volume).
+                                                </p>
+                                                <details className="text-xs text-slate-300 bg-slate-900/90 p-3 rounded-lg cursor-pointer border border-slate-700">
+                                                    <summary className="font-bold text-cyan-400 hover:text-cyan-300">
+                                                        Click here to reveal explanation
+                                                    </summary>
+                                                    <p className="mt-2 text-slate-200 leading-relaxed">
+                                                        <strong className="text-rose-400">NO!</strong> Light, heat, magnetic fields, and radio waves are forms of <strong className="text-amber-300">ENERGY</strong>, not matter. They do not have mass or occupy volume. Chemistry studies how energy interacts with matter, but energy itself is not matter.
+                                                    </p>
+                                                </details>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(0)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(2)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Macroscopic vs Microscopic</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 2: MACROSCOPIC VS MICROSCOPIC */}
+                                    {slideIndex === 2 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    🔍 3. Macroscopic vs. Microscopic Chemistry
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Objective #19 Vocabulary Mastery: The two levels of chemical observation.
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Macroscopic */}
+                                                <div className="bg-slate-900/80 p-6 rounded-xl border border-cyan-500/30 space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="text-xl font-bold text-cyan-300">1. Macroscopic Realm</h4>
+                                                        <span className="text-2xl">👁️</span>
+                                                    </div>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <strong className="text-white">Definition:</strong> The realm of objects and phenomena that are large enough to be observed, measured, and perceived directly by the naked human senses without magnification.
+                                                    </p>
+                                                    <div className="bg-slate-800 p-4 rounded-lg space-y-2 border border-slate-700 text-xs">
+                                                        <div className="font-bold text-cyan-400">Real Lab Examples:</div>
+                                                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                                                            <li>Observing water boiling at 100 °C.</li>
+                                                            <li>Watching an iron nail turn reddish-brown from rust.</li>
+                                                            <li>Measuring 25.0 mL of solution in a graduated cylinder.</li>
+                                                            <li>Seeing a color change when mixing acid and base.</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                {/* Microscopic */}
+                                                <div className="bg-slate-900/80 p-6 rounded-xl border border-purple-500/30 space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="text-xl font-bold text-purple-300">2. Microscopic (Submicroscopic)</h4>
+                                                        <span className="text-2xl">⚛️</span>
+                                                    </div>
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <strong className="text-white">Definition:</strong> The realm of matter at the atomic, molecular, and subatomic scale, which cannot be seen with the human eye (requires indirect models, electron microscopes, or particle theory).
+                                                    </p>
+                                                    <div className="bg-slate-800 p-4 rounded-lg space-y-2 border border-slate-700 text-xs">
+                                                        <div className="font-bold text-purple-400">Submicroscopic Examples:</div>
+                                                        <ul className="list-disc list-inside text-slate-300 space-y-1">
+                                                            <li>H₂O molecules gaining kinetic energy and breaking hydrogen bonds.</li>
+                                                            <li>Iron atoms (Fe) giving up electrons to Oxygen atoms (O₂) to form Fe₂O₃.</li>
+                                                            <li>Protons, neutrons, and electron clouds inside a Sodium atom.</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Comparison Card */}
+                                            <div className="bg-slate-900 p-5 rounded-xl border border-slate-700">
+                                                <h4 className="font-bold text-slate-200 text-sm mb-3">
+                                                    🔄 How They Connect in Honors Chemistry:
+                                                </h4>
+                                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300 bg-slate-800 p-4 rounded-lg">
+                                                    <div className="text-center sm:text-left">
+                                                        <span className="font-bold text-cyan-400 block text-sm">Macroscopic Observation</span>
+                                                        <span>You see gas bubbles forming in a beaker.</span>
+                                                    </div>
+                                                    <div className="text-2xl font-bold text-indigo-400">➔</div>
+                                                    <div className="text-center sm:text-left">
+                                                        <span className="font-bold text-purple-400 block text-sm">Microscopic Explanation</span>
+                                                        <span>Chemical bonds break and atoms rearrange into H₂ and O₂ molecules.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(1)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(3)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Everyday Chemistry Examples</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 3: EVERYDAY CHEMISTRY EXAMPLES */}
+                                    {slideIndex === 3 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    🌟 4. Examples of Chemistry in Everyday Life
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Chemistry isn't just in test tubes—it's everywhere around you!
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">🍞</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Cooking & Baking</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Baking soda (NaHCO₃) reacts with acid to produce CO₂ bubbles, causing cake batter to rise.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">🚗</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Rust & Corrosion</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Iron metal reacts with atmospheric oxygen and water vapor in an oxidation reaction to form Fe₂O₃ rust.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">🔋</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Batteries & Smartphones</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Lithium ions moving between electrodes release electrical current that powers your smartphone screen.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">🧼</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Soaps & Cleaners</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Soap molecules have polar heads (attract water) and non-polar tails (dissolve grease and dirt).
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">💊</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Pharmaceuticals</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Aspirin and ibuprofen are organic molecules engineered to bind specifically to pain enzymes in your body.
+                                                    </p>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 hover:border-cyan-500/50 transition">
+                                                    <div className="text-2xl mb-2">🍎</div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">Digestion & Metabolism</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        Stomach hydrochloric acid (HCl) and stomach enzymes break down complex food proteins into individual amino acids.
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(2)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(4)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Major Branches of Chemistry</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 4: MAJOR BRANCHES OF CHEMISTRY */}
+                                    {slideIndex === 4 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    🧪 5. Major Branches (Areas) of Chemistry
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Chemistry is vast! It is divided into 5 major traditional branches.
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border-l-4 border-emerald-500 bg-slate-900">
+                                                    <h4 className="font-bold text-emerald-400 text-base mb-1">1. Organic Chemistry</h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                                                        The study of carbon-containing chemical compounds (plastics, pharmaceuticals, living organisms).
+                                                    </p>
+                                                    <span className="text-[11px] text-slate-400 italic">Example: Synthesizing polyethylene polymers or painkillers.</span>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border-l-4 border-cyan-500 bg-slate-900">
+                                                    <h4 className="font-bold text-cyan-400 text-base mb-1">2. Inorganic Chemistry</h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                                                        The study of non-carbon substances, metals, minerals, ceramics, and semiconductors.
+                                                    </p>
+                                                    <span className="text-[11px] text-slate-400 italic">Example: Designing titanium alloys for aerospace or solar panels.</span>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border-l-4 border-indigo-500 bg-slate-900">
+                                                    <h4 className="font-bold text-indigo-400 text-base mb-1">3. Physical Chemistry</h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                                                        The study of the mechanism, rate (speed), and energy transfer that occurs when matter changes.
+                                                    </p>
+                                                    <span className="text-[11px] text-slate-400 italic">Example: Calculating activation energy of combustion reactions.</span>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border-l-4 border-purple-500 bg-slate-900">
+                                                    <h4 className="font-bold text-purple-400 text-base mb-1">4. Analytical Chemistry</h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                                                        The study of the composition of matter—determining WHAT is present and HOW MUCH is present.
+                                                    </p>
+                                                    <span className="text-[11px] text-slate-400 italic">Example: Testing lead levels in drinking water samples.</span>
+                                                </div>
+
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border-l-4 border-amber-500 bg-slate-900">
+                                                    <h4 className="font-bold text-amber-400 text-base mb-1">5. Biochemistry</h4>
+                                                    <p className="text-xs text-slate-300 leading-relaxed mb-2">
+                                                        The study of chemical processes and reactions that take place inside living organisms.
+                                                    </p>
+                                                    <span className="text-[11px] text-slate-400 italic">Example: Studying enzyme catalysis or cellular respiration.</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(3)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(5)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Organic vs Inorganic (Deep Dive)</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 5: ORGANIC VS INORGANIC (DEEP DIVE) */}
+                                    {slideIndex === 5 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    🔬 6. Organic vs. Inorganic Chemistry (Mastering Objective #1)
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    This is Objective #1 from your syllabus! Let's examine the exact criteria and key exceptions.
+                                                </p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                {/* Organic Side */}
+                                                <div className="bg-slate-900/90 p-6 rounded-xl border border-emerald-500/40 space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="text-xl font-bold text-emerald-400">Organic Chemistry</h4>
+                                                        <span className="px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 text-xs font-bold">Contains Carbon</span>
+                                                    </div>
+
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <strong className="text-white">Core Rule:</strong> Focuses on compounds containing <strong className="text-emerald-300">Carbon (C)</strong> covalently bonded to Hydrogen (H), Oxygen (O), Nitrogen (N), or Halogens.
+                                                    </p>
+
+                                                    <div className="bg-slate-800/80 p-4 rounded-lg space-y-2 border border-slate-700 text-xs">
+                                                        <span className="font-bold text-emerald-400 block">Clear Organic Examples:</span>
+                                                        <ul className="space-y-1 text-slate-200">
+                                                            <li>✅ <strong>Methane gas (CH₄):</strong> Natural gas fuel</li>
+                                                            <li>✅ <strong>Glucose sugar (C₆H₁₂O₆):</strong> Energy molecule in cells</li>
+                                                            <li>✅ <strong>Ethanol / Alcohol (C₂H₅OH):</strong> Disinfectant & fuel</li>
+                                                            <li>✅ <strong>Propane (C₃H₈):</strong> Grill gas fuel</li>
+                                                            <li>✅ <strong>DNA & Proteins:</strong> Macromolecules of life</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+
+                                                {/* Inorganic Side */}
+                                                <div className="bg-slate-900/90 p-6 rounded-xl border border-cyan-500/40 space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="text-xl font-bold text-cyan-400">Inorganic Chemistry</h4>
+                                                        <span className="px-2.5 py-1 rounded bg-cyan-500/20 text-cyan-300 text-xs font-bold">Non-Carbon Core</span>
+                                                    </div>
+
+                                                    <p className="text-xs text-slate-300 leading-relaxed">
+                                                        <strong className="text-white">Core Rule:</strong> Studies all substances that do <strong className="text-cyan-300">NOT contain carbon</strong> (metals, salts, minerals, water) PLUS a few simple carbon exceptions!
+                                                    </p>
+
+                                                    <div className="bg-slate-800/80 p-4 rounded-lg space-y-2 border border-slate-700 text-xs">
+                                                        <span className="font-bold text-cyan-400 block">Clear Inorganic Examples:</span>
+                                                        <ul className="space-y-1 text-slate-200">
+                                                            <li>✅ <strong>Water (H₂O):</strong> Essential solvent</li>
+                                                            <li>✅ <strong>Table Salt (NaCl):</strong> Ionic compound</li>
+                                                            <li>✅ <strong>Sulfuric Acid (H₂SO₄):</strong> Industrial acid</li>
+                                                            <li>✅ <strong>Rust / Iron Oxide (Fe₂O₃):</strong> Metal oxide</li>
+                                                            <li>✅ <strong>Ammonia (NH₃):</strong> Fertilizer</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* IMPORTANT EXCEPTIONS CALLOUT BOX */}
+                                            <div className="bg-amber-950/40 border border-amber-500/40 p-5 rounded-xl space-y-2">
+                                                <h4 className="font-bold text-amber-300 text-sm flex items-center gap-2">
+                                                    <span>⚠️</span> CRITICAL HONORS EXCEPTION WARNING (Common Test Trap!)
+                                                </h4>
+                                                <p className="text-xs text-slate-300 leading-relaxed">
+                                                    Even though they contain Carbon, the following simple compounds are traditionally classified as <strong className="text-amber-200 uppercase">INORGANIC</strong> because they act like minerals and lack C-H bonds:
+                                                </p>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mt-2">
+                                                    <div className="bg-slate-900 p-2.5 rounded border border-slate-700 text-center font-medium text-slate-200">
+                                                        Carbon Dioxide (CO₂) & Carbon Monoxide (CO)
+                                                    </div>
+                                                    <div className="bg-slate-900 p-2.5 rounded border border-slate-700 text-center font-medium text-slate-200">
+                                                        Carbonates (e.g., Calcium Carbonate CaCO₃)
+                                                    </div>
+                                                    <div className="bg-slate-900 p-2.5 rounded border border-slate-700 text-center font-medium text-slate-200">
+                                                        Cyanides (e.g., Potassium Cyanide KCN)
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(4)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(6)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Interactive Sorting Lab</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 6: INTERACTIVE SORTING LAB */}
+                                    {slideIndex === 6 && (
+                                        <div className="space-y-6">
+                                            <div className="border-b border-slate-700 pb-4 flex justify-between items-center flex-wrap gap-4">
+                                                <div>
+                                                    <h3 className="text-2xl font-bold text-indigo-400">
+                                                        🧪 7. Interactive Lab: Organic vs. Inorganic Classifier
+                                                    </h3>
+                                                    <p className="text-slate-300 text-sm mt-1">
+                                                        Test your understanding! Assign each compound to Organic or Inorganic.
+                                                    </p>
+                                                </div>
+                                                <button 
+                                                    onClick={resetSorting} 
+                                                    className="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-xs font-medium text-slate-200">
+                                                    🔄 Reset Lab
+                                                </button>
+                                            </div>
+
+                                            {/* Sorting Area */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                {/* Left Column: Unsorted Items */}
+                                                <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-700 space-y-3">
+                                                    <h4 className="font-bold text-slate-200 text-sm">
+                                                        📦 Unsorted Chemical Substances
+                                                    </h4>
+                                                    <p className="text-xs text-slate-400">
+                                                        Click the button on each item to classify it:
+                                                    </p>
+
+                                                    <div className="space-y-2">
+                                                        {sortingItems.map((item) => (
+                                                            <div key={item.id} className="p-3 bg-slate-800 rounded-lg border border-slate-700 flex flex-wrap items-center justify-between gap-2">
+                                                                <span className="text-xs font-semibold text-slate-200">{item.name}</span>
+                                                                
+                                                                <div className="flex items-center gap-2">
+                                                                    <button 
+                                                                        onClick={() => handlePlaceItem(item.id, 'organic')}
+                                                                        className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                                                                            item.placed === 'organic' 
+                                                                                ? 'bg-emerald-600 text-white ring-2 ring-emerald-400' 
+                                                                                : 'bg-slate-700 hover:bg-emerald-700/60 text-emerald-300'
+                                                                        }`}>
+                                                                        Organic
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={() => handlePlaceItem(item.id, 'inorganic')}
+                                                                        className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                                                                            item.placed === 'inorganic' 
+                                                                                ? 'bg-cyan-600 text-white ring-2 ring-cyan-400' 
+                                                                                : 'bg-slate-700 hover:bg-cyan-700/60 text-cyan-300'
+                                                                        }`}>
+                                                                        Inorganic
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    <button 
+                                                        onClick={checkSortingResults}
+                                                        className="w-full mt-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 font-bold text-xs text-white shadow-lg transition">
+                                                        Check My Classifications
+                                                    </button>
+
+                                                    {sortingScore !== null && (
+                                                        <div className={`p-3 rounded-lg text-xs font-bold text-center mt-3 ${
+                                                            sortingScore === sortingItems.length 
+                                                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
+                                                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                                                        }`}>
+                                                            {sortingScore === sortingItems.length 
+                                                                ? `🎉 PERFECT SCORE! ${sortingScore}/${sortingItems.length} Correct!` 
+                                                                : `You got ${sortingScore}/${sortingItems.length} correct. Review exceptions like CO₂ and try again!`}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Right Column: Classification Bins */}
+                                                <div className="space-y-4">
+                                                    {/* Organic Bin */}
+                                                    <div className="bg-emerald-950/30 p-5 rounded-xl border border-emerald-500/40 min-h-[160px]">
+                                                        <h4 className="font-bold text-emerald-400 text-sm mb-3 flex items-center justify-between">
+                                                            <span>🌱 Organic Bin</span>
+                                                            <span className="text-xs bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-300">
+                                                                {sortingItems.filter(i => i.placed === 'organic').length} Items
+                                                            </span>
+                                                        </h4>
+                                                        <div className="space-y-2">
+                                                            {sortingItems.filter(i => i.placed === 'organic').map(i => (
+                                                                <div key={i.id} className="p-2 bg-slate-900/90 rounded text-xs text-emerald-200 border border-emerald-500/30">
+                                                                    {i.name}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Inorganic Bin */}
+                                                    <div className="bg-cyan-950/30 p-5 rounded-xl border border-cyan-500/40 min-h-[160px]">
+                                                        <h4 className="font-bold text-cyan-400 text-sm mb-3 flex items-center justify-between">
+                                                            <span>💎 Inorganic Bin</span>
+                                                            <span className="text-xs bg-cyan-500/20 px-2 py-0.5 rounded text-cyan-300">
+                                                                {sortingItems.filter(i => i.placed === 'inorganic').length} Items
+                                                            </span>
+                                                        </h4>
+                                                        <div className="space-y-2">
+                                                            {sortingItems.filter(i => i.placed === 'inorganic').map(i => (
+                                                                <div key={i.id} className="p-2 bg-slate-900/90 rounded text-xs text-cyan-200 border border-cyan-500/30">
+                                                                    {i.name}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-6">
+                                                <button onClick={() => setSlideIndex(5)} className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">
+                                                    ← Previous
+                                                </button>
+                                                <button onClick={() => setSlideIndex(7)} className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2">
+                                                    <span>Next: Section 1 Practice Center & Checkpoint</span>
+                                                    <span>→</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* SLIDE 7: PRACTICE CENTER & CHECKPOINT */}
+                                    {slideIndex === 7 && (
+                                        <div className="space-y-8">
+                                            <div className="border-b border-slate-700 pb-4">
+                                                <h3 className="text-2xl font-bold text-indigo-400">
+                                                    📝 8. Section 1 Practice Center & Comprehensive Checkpoint
+                                                </h3>
+                                                <p className="text-slate-300 text-sm mt-1">
+                                                    Test your mastery across 4 difficulty levels with instant detailed feedback and mistake analysis.
+                                                </p>
+                                            </div>
+
+                                            {/* 1. MULTIPLE CHOICE QUESTIONS */}
+                                            <div className="bg-slate-900/80 p-6 rounded-xl border border-slate-700 space-y-4">
+                                                <div className="flex justify-between items-center">
+                                                    <h4 className="font-bold text-lg text-white">Part A: Multiple Choice Questions</h4>
+                                                    <span className="text-xs px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 font-bold">🟢 Level 1 & 🟡 Level 2</span>
+                                                </div>
+
+                                                {/* MCQ Question 1 */}
+                                                <div className="p-4 bg-slate-800 rounded-lg space-y-3 border border-slate-700">
+                                                    <p className="text-sm font-semibold text-slate-200">
+                                                        1. Which of the following substances would be studied under <span className="text-emerald-400">ORGANIC CHEMISTRY</span>?
+                                                    </p>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                                        {[
+                                                            { key: 'a', text: 'A) Table Salt (NaCl)' },
+                                                            { key: 'b', text: 'B) Glucose Sugar (C₆H₁₂O₆)', correct: true },
+                                                            { key: 'c', text: 'C) Water (H₂O)' },
+                                                            { key: 'd', text: 'D) Sulfuric Acid (H₂SO₄)' }
+                                                        ].map((opt) => (
+                                                            <button
+                                                                key={opt.key}
+                                                                onClick={() => {
+                                                                    setMcqAnswers(prev => ({ ...prev, q1: opt.key }));
+                                                                    if (!opt.correct && !mistakeBank.some(m => m.id === 'mcq1')) {
+                                                                        setMistakeBank(prev => [...prev, {
+                                                                            id: 'mcq1',
+                                                                            question: 'Which of the following substances would be studied under ORGANIC chemistry?',
+                                                                            yourAnswer: opt.text,
+                                                                            correctAnswer: 'B) Glucose Sugar (C₆H₁₂O₆)',
+                                                                            explanation: 'Glucose contains carbon covalent bonds characteristic of organic life molecules. Water, salt, and sulfuric acid are inorganic.'
+                                                                        }]);
+                                                                    }
+                                                                }}
+                                                                className={`p-3 rounded-lg text-left font-medium transition ${
+                                                                    mcqAnswers.q1 === opt.key 
+                                                                        ? opt.correct ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                                                                        : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                                                                }`}>
+                                                                {opt.text}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    {mcqAnswers.q1 && (
+                                                        <div className="p-3 bg-slate-900 rounded text-xs text-slate-300 mt-2 border border-slate-700">
+                                                            {mcqAnswers.q1 === 'b' ? (
+                                                                <span className="text-emerald-400 font-bold">✅ Correct! Glucose (C₆H₁₂O₆) is a classic organic carbon compound.</span>
+                                                            ) : (
+                                                                <span className="text-rose-400 font-bold">❌ Incorrect. Remember: Organic chemistry studies carbon compounds like glucose.</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* MCQ Question 2 */}
+                                                <div className="p-4 bg-slate-800 rounded-lg space-y-3 border border-slate-700">
+                                                    <p className="text-sm font-semibold text-slate-200">
+                                                        2. Observing a chemical solution change from clear to deep purple during a lab reaction is an example of a:
+                                                    </p>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                                        {[
+                                                            { key: 'a', text: 'A) Microscopic Observation' },
+                                                            { key: 'b', text: 'B) Macroscopic Observation', correct: true },
+                                                            { key: 'c', text: 'C) Subatomic Calculation' },
+                                                            { key: 'd', text: 'D) Theoretical Model' }
+                                                        ].map((opt) => (
+                                                            <button
+                                                                key={opt.key}
+                                                                onClick={() => {
+                                                                    setMcqAnswers(prev => ({ ...prev, q2: opt.key }));
+                                                                }}
+                                                                className={`p-3 rounded-lg text-left font-medium transition ${
+                                                                    mcqAnswers.q2 === opt.key 
+                                                                        ? opt.correct ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
+                                                                        : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                                                                }`}>
+                                                                {opt.text}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    {mcqAnswers.q2 && (
+                                                        <div className="p-3 bg-slate-900 rounded text-xs text-slate-300 mt-2 border border-slate-700">
+                                                            {mcqAnswers.q2 === 'b' ? (
+                                                                <span className="text-emerald-400 font-bold">✅ Correct! Color changes seen directly with your eyes are macroscopic.</span>
+                                                            ) : (
+                                                                <span className="text-rose-400 font-bold">❌ Incorrect. Visual observations seen directly are macroscopic.</span>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* 2. TRUE OR FALSE SECTION */}
+                                            <div className="bg-slate-900/80 p-6 rounded-xl border border-slate-700 space-y-4">
+                                                <h4 className="font-bold text-lg text-white">Part B: True or False (Misconception Check)</h4>
+
+                                                <div className="p-4 bg-slate-800 rounded-lg space-y-2 border border-slate-700 text-xs">
+                                                    <p className="font-semibold text-slate-200 text-sm">
+                                                        Statement: Carbon Dioxide (CO₂) is classified as an Organic compound because it contains Carbon.
+                                                    </p>
+                                                    <div className="flex gap-3 pt-2">
+                                                        <button 
+                                                            onClick={() => setTfAnswers(prev => ({ ...prev, q1: 'true' }))}
+                                                            className={`px-4 py-2 rounded-lg font-bold transition ${tfAnswers.q1 === 'true' ? 'bg-rose-600 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                                                            TRUE
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setTfAnswers(prev => ({ ...prev, q1: 'false' }))}
+                                                            className={`px-4 py-2 rounded-lg font-bold transition ${tfAnswers.q1 === 'false' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                                                            FALSE
+                                                        </button>
+                                                    </div>
+                                                    {tfAnswers.q1 && (
+                                                        <p className="mt-2 p-2 bg-slate-900 rounded text-slate-300">
+                                                            {tfAnswers.q1 === 'false' 
+                                                                ? "✅ CORRECT! Statement is FALSE. Carbon dioxide (CO₂) is a traditional exception and is classified as INORGANIC." 
+                                                                : "❌ INCORRECT! Remember: CO₂ is an inorganic exception!"}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* 3. HONORS LEVEL 4 CHALLENGE QUESTION */}
+                                            <div className="bg-gradient-to-r from-purple-950/60 to-slate-900 p-6 rounded-xl border border-purple-500/40 space-y-3">
+                                                <div className="flex justify-between items-center">
+                                                    <h4 className="font-bold text-lg text-purple-300">Part C: 🔴 Level 4 Honors Challenge</h4>
+                                                    <span className="text-xs px-2.5 py-1 rounded bg-purple-500/20 text-purple-300 font-bold">Multi-Step Reasoning</span>
+                                                </div>
+                                                <p className="text-xs text-slate-300 leading-relaxed">
+                                                    A research chemist extracts a clear liquid from a newly discovered plant. Chemical analysis reveals the formula is <strong className="text-cyan-300">C₁₀H₁₆O</strong>. 
+                                                    1) Is this substance organic or inorganic? 2) Describe one macroscopic property and one microscopic characteristic of this sample.
+                                                </p>
+                                                
+                                                <textarea 
+                                                    rows="3"
+                                                    placeholder="Type your explanation here..."
+                                                    value={shortAnswerText.q1 || ''}
+                                                    onChange={(e) => setShortAnswerText(prev => ({ ...prev, q1: e.target.value }))}
+                                                    className="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-purple-500"></textarea>
+
+                                                <details className="text-xs text-slate-300 bg-slate-900/90 p-3 rounded-lg cursor-pointer border border-slate-700">
+                                                    <summary className="font-bold text-purple-400 hover:text-purple-300">
+                                                        Click here to reveal exemplar Honors model answer
+                                                    </summary>
+                                                    <div className="mt-2 text-slate-200 space-y-1 leading-relaxed">
+                                                        <p><strong>1) Classification:</strong> <span className="text-emerald-400">ORGANIC</span>. It contains a complex carbon-hydrogen backbone (C₁₀H₁₆O).</p>
+                                                        <p><strong>2) Macroscopic Property:</strong> It is a clear liquid observed in a graduated cylinder with a specific boiling point.</p>
+                                                        <p><strong>3) Microscopic Characteristic:</strong> Covalent bonding between 10 carbon atoms, 16 hydrogen atoms, and 1 oxygen atom forming discrete molecules.</p>
+                                                    </div>
+                                                </details>
+                                            </div>
+
+                                            {/* LARGE CONTINUE TO SECTION 2 BUTTON */}
+                                            <div className="pt-8 border-t border-slate-700 flex flex-col items-center justify-center text-center space-y-4">
+                                                <div className="p-4 bg-indigo-950/50 rounded-2xl border border-indigo-500/30 max-w-xl">
+                                                    <h4 className="font-bold text-white text-lg mb-1">🎉 Section 1 Completed!</h4>
+                                                    <p className="text-xs text-slate-300">
+                                                        You have thoroughly mastered Objectives #1 and #19 (Part 1). Ready to proceed to Section 2: Science and Technology?
+                                                    </p>
+                                                </div>
+
+                                                <button 
+                                                    onClick={() => alert("Congratulations on finishing Section 1! Section 2 (Science and Technology) will load next in your sequential course workflow.")}
+                                                    className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-extrabold text-lg shadow-2xl hover:shadow-cyan-500/20 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-3">
+                                                    <span>CONTINUE TO SECTION 2 — SCIENCE & TECHNOLOGY</span>
+                                                    <span className="text-xl">➔</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 4: MISTAKE BANK */}
+                        {activeTab === 'mistakes' && (
+                            <div className="space-y-6">
+                                <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                                    <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                        <span>⚠️</span> Mistake Bank & Personalized Review
+                                    </h2>
+                                    <p className="text-slate-300 text-sm">
+                                        Every question you answer incorrectly is recorded here for targeted review and remediation.
+                                    </p>
+                                </div>
+
+                                {mistakeBank.length === 0 ? (
+                                    <div className="p-8 bg-slate-800/50 rounded-xl border border-slate-700 text-center text-slate-400">
+                                        <p className="text-base font-semibold">✨ No mistakes recorded yet!</p>
+                                        <p className="text-xs mt-1">Keep practicing in Section 1 to test your understanding.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {mistakeBank.map((m, idx) => (
+                                            <div key={idx} className="p-5 bg-slate-800 rounded-xl border border-rose-500/30 space-y-2">
+                                                <div className="flex justify-between text-xs font-bold text-rose-400">
+                                                    <span>Mistake #{idx + 1}</span>
+                                                    <span>Section 1 Topic</span>
+                                                </div>
+                                                <p className="font-semibold text-slate-100 text-sm">{m.question}</p>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
+                                                    <div className="p-2.5 bg-rose-950/40 rounded border border-rose-500/30 text-rose-200">
+                                                        <strong>Your Answer:</strong> {m.yourAnswer}
+                                                    </div>
+                                                    <div className="p-2.5 bg-emerald-950/40 rounded border border-emerald-500/30 text-emerald-200">
+                                                        <strong>Correct Answer:</strong> {m.correctAnswer}
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-slate-300 pt-1">
+                                                    💡 <strong>Explanation:</strong> {m.explanation}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* TAB 5: PROGRESS DASHBOARD */}
+                        {activeTab === 'tracker' && (
+                            <div className="space-y-6">
+                                <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
+                                    <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                        <span>📊</span> Student Progress Dashboard
+                                    </h2>
+                                    <p className="text-slate-300 text-sm">
+                                        Track your progress across all 18 sections and key skill areas without letter grade stress.
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                        <span className="text-xs text-slate-400 font-semibold block">Sections Completed</span>
+                                        <span className="text-3xl font-extrabold text-cyan-400 mt-1 block">1 / 18</span>
+                                        <span className="text-[11px] text-slate-400 mt-1 block">Section 1 Active</span>
+                                    </div>
+
+                                    <div className="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                        <span className="text-xs text-slate-400 font-semibold block">Objectives Mastered</span>
+                                        <span className="text-3xl font-extrabold text-emerald-400 mt-1 block">2 / 19</span>
+                                        <span className="text-[11px] text-slate-400 mt-1 block">Obj #1 and #19 (Part 1)</span>
+                                    </div>
+
+                                    <div className="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                        <span className="text-xs text-slate-400 font-semibold block">Interactive Sorting Lab</span>
+                                        <span className="text-3xl font-extrabold text-indigo-400 mt-1 block">
+                                            {sortingScore !== null ? `${sortingScore}/8` : 'Incomplete'}
+                                        </span>
+                                        <span className="text-[11px] text-slate-400 mt-1 block">Organic vs Inorganic</span>
+                                    </div>
+
+                                    <div className="bg-slate-800 p-5 rounded-xl border border-slate-700">
+                                        <span className="text-xs text-slate-400 font-semibold block">Mistakes Recorded</span>
+                                        <span className="text-3xl font-extrabold text-rose-400 mt-1 block">{mistakeBank.length}</span>
+                                        <span className="text-[11px] text-slate-400 mt-1 block">Logged in Mistake Bank</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* AI CHEMISTRY TUTOR FLOATING CHAT WIDGET */}
+                    {isChatMinimized ? (
+                        <button 
+                            onClick={() => setIsChatMinimized(false)}
+                            className="fixed bottom-4 right-4 z-50 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-full shadow-2xl hover:scale-105 transition-all flex items-center gap-2 border border-indigo-400 font-bold text-xs cursor-pointer">
+                            <span>🤖</span>
+                            <span>Ask AI Tutor</span>
+                            <span className="bg-indigo-900/80 px-2 py-0.5 rounded-full text-[10px]">▲ Expand</span>
+                        </button>
+                    ) : (
+                        <div className="fixed bottom-4 right-4 z-50 w-full sm:w-80 md:w-96 glass-panel rounded-2xl shadow-2xl border border-slate-700 overflow-hidden flex flex-col max-h-[480px]">
+                            <div 
+                                onClick={() => setIsChatMinimized(true)}
+                                className="p-3 bg-gradient-to-r from-indigo-700 to-purple-800 text-white font-bold text-xs flex justify-between items-center cursor-pointer select-none">
+                                <span className="flex items-center gap-2">
+                                    <span>🤖</span> Ask Your Chemistry Tutor
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] bg-indigo-900/80 px-2 py-0.5 rounded text-indigo-200">
+                                        Section 1 Tutor
+                                    </span>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); setIsChatMinimized(true); }}
+                                        title="Minimize Chat"
+                                        className="text-white hover:bg-indigo-900/80 font-bold w-6 h-6 rounded flex items-center justify-center bg-indigo-900/40 text-sm transition">
+                                        −
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Chat Messages */}
+                            <div className="p-3 flex-grow overflow-y-auto space-y-2 text-xs custom-scrollbar bg-slate-900/90 h-64">
+                                {chatMessages.map((msg, i) => (
+                                    <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div className={`p-2.5 rounded-xl max-w-[85%] leading-relaxed ${
+                                            msg.sender === 'user' 
+                                                ? 'bg-indigo-600 text-white rounded-br-none' 
+                                                : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none'
+                                        }`}>
+                                            {msg.text}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Chat Input */}
+                            <form onSubmit={handleSendMessage} className="p-2 bg-slate-800 border-t border-slate-700 flex gap-2">
+                                <input 
+                                    type="text"
+                                    placeholder="Ask a question or request a hint..."
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    className="flex-grow bg-slate-900 text-xs text-slate-200 p-2 rounded-lg border border-slate-700 focus:outline-none focus:border-indigo-500"
+                                />
+                                <button type="submit" className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold">
+                                    Send
+                                </button>
+                            </form>
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <footer className="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
+                        Honors Chemistry I — Unit 1 Digital Interactive Curriculum Platform
+                    </footer>
+                </div>
+            );
+        }
+
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<ChemistryApp />);
+    </script>
+</body>
+</html>
